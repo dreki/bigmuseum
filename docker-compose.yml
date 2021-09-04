@@ -1,0 +1,17 @@
+version: "3.8"
+services:
+  web:
+    container_name: bigmuseum
+    hostname: bigmuseum
+    # env_file:
+    #   - dev.env
+    environment:
+      DEBUG: "true"
+    build:
+      context: .
+      # args:
+      #   A_BUILD_ARG: $VALUE_FROM_ENV
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/app
