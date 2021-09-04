@@ -34,4 +34,5 @@ RUN set -x \
 
 COPY . /app
 
-CMD ["python3", "/app/main.py"]
+# CMD ["python3", "/app/main.py"]
+CMD ["/app/main.sh"]
