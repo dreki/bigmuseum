@@ -16,21 +16,38 @@ RUN /usr/local/bin/python3 -m venv ${VIRTUAL_ENV}
 ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
 
 RUN set -x \
+  && apk add --no-cache bash nodejs \
+  && apk add --no-cache npm \
+  && npm install --global yarn
+
+# WORKDIR here is important for installing node packages
+WORKDIR /
+COPY package.json package.json
+# Install Node dependencies at `/node_modules` in the container.
+RUN set -x \
+  && yarn install --modules-folder=/node_modules
+ENV PATH="/node_modules/.bin:${PATH}"
+
+RUN set -x \
   && echo "#!/usr/bin/which bash" > /root/.bashrc \
   && echo "PS1=\"\w # \"" > /root/.bashrc \
   && echo ". ${VIRTUAL_ENV}/bin/activate" >> /root/.bashrc \
   && chmod u+rx /root/.bashrc
 
-RUN set -x \
-  && apk add --no-cache bash nodejs
 
 WORKDIR /app
 
+# Install Python requirements.
 COPY requirements.txt requirements.txt
-
 RUN set -x \
   && pip3 install --upgrade pip \
   && pip3 install -r requirements.txt
+
+# Install Node requirements.
+# COPY package.json package.json
+# RUN set -x \
+#   && npm install --global yarn
+# && npm install
 
 COPY . /app
 

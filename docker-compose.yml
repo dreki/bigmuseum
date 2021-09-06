@@ -13,5 +13,7 @@ services:
       #   A_BUILD_ARG: $VALUE_FROM_ENV
     ports:
       - "8888:8888"
+      - "8080:8080"
     volumes:
       - .:/app
+      - /app/node_modules  # Ensure `/app/node_modules` is always empty in the container
