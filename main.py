@@ -1,7 +1,9 @@
+import logging
+import os
+
 import tornado.ioloop
 import tornado.options
 import tornado.web
-import logging
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -17,7 +19,8 @@ def make_app() -> tornado.web.Application:
         [
             (r'/', HelloWorldHandler)
         ],
-        debug=True
+        debug=True,
+        static_path=os.path.join(os.path.dirname(__file__), 'dist'),
     )
 
 

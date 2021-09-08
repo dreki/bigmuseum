@@ -7,21 +7,21 @@
   "author": "",
   "license": "ISC",
   "scripts": {
-    "clean": "rm dist/bundle.js",
-    "start": "parcel src/index.html",
-    "build-prod": "parcel build src/index.html"
+    "clean": "rm -rf /app/.cache && rm -rf dist/bundle.js",
+    "start": "parcel src/index.html --public-url /static/ --hmr-port 42033",
+    "build-prod": "parcel build src/index.html --public-url /static/"
   },
   "dependencies": {
+    "@tailwindcss/postcss7-compat": "^2.2.9",
     "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "tailwindcss": "^2.2.9"
+    "react-dom": "^17.0.2"
   },
   "devDependencies": {
-    "parcel-bundler": "^1.12.5",
     "@babel/core": "^7.15.0",
     "@babel/preset-env": "^7.15.0",
     "@babel/preset-react": "^7.14.5",
-    "postcss-modules": "^4.2.2",
-    "autoprefixer": "^10.3.4"
+    "autoprefixer": "^10.3.4",
+    "parcel-bundler": "^1.12.5",
+    "postcss-modules": "^4.2.2"
   }
 }

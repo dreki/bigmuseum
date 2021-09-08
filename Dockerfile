@@ -18,6 +18,7 @@ ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
 RUN set -x \
   && apk add --no-cache bash nodejs \
   && apk add --no-cache npm \
+  && apk add --no-cache util-linux \
   && npm install --global yarn
 
 # WORKDIR here is important for installing node packages
