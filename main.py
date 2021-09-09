@@ -15,9 +15,13 @@ class HelloWorldHandler(tornado.web.RequestHandler):
 
 
 def make_app() -> tornado.web.Application:
+    static_path = os.path.join(os.path.dirname(__file__), 'dist')
     return tornado.web.Application(
         [
-            (r'/', HelloWorldHandler)
+            (r'/', HelloWorldHandler),
+            # Alias for main app file.
+            (r'/app/(.*)', tornado.web.StaticFileHandler, {'path': static_path,
+                                                           'default_filename': 'index.html'})
         ],
         debug=True,
         static_path=os.path.join(os.path.dirname(__file__), 'dist'),
