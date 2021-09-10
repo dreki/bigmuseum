@@ -19,6 +19,7 @@ RUN set -x \
   && apk add --no-cache bash nodejs \
   && apk add --no-cache npm \
   && apk add --no-cache util-linux \
+  && apk add --no-cache build-base \
   && npm install --global yarn
 
 # WORKDIR here is important for installing node packages
