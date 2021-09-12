@@ -1,32 +1,12 @@
 # bigmusem
 
-Empty project.
+Curate your own `/r/museum`.
 
 ## Building and running on localhost
 
-First install dependencies:
-
-```sh
-npm install
-```
-
-To run in hot module reloading mode:
-
-```sh
-npm start
-```
-
-To create a production build:
-
-```sh
-npm run build-prod
-```
+1. Install Docker Desktop
+2. Run `make run`
 
 ## Running
 
-Open the file `dist/index.html` in your browser
-
-## Credits
-
-Made with [createapp.dev](https://createapp.dev/)
-
+Open `http://localhost:8888/app/` in your browser.
