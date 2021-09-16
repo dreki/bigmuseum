@@ -43,6 +43,7 @@ WORKDIR /app
 COPY requirements.txt requirements.txt
 RUN set -x \
   && pip3 install --upgrade pip \
+  && pip3 install ipython \
   && pip3 install -r requirements.txt
 
 # Install Node requirements.

@@ -6,6 +6,9 @@ dist
 node_modules/
 *.log
 .parcel-cache
+local.env
+*.pyc
+__pycache__
 
 # OS generated files
 .DS_Store

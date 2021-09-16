@@ -3,8 +3,8 @@ services:
   web:
     container_name: bigmuseum
     hostname: bigmuseum
-    # env_file:
-    #   - dev.env
+    env_file:
+      - local.env
     environment:
       DEBUG: "true"
     build:
