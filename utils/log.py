@@ -2,6 +2,7 @@
 import logging
 import sys
 from typing import Optional
+import atexit
 
 import tornado.log
 
@@ -16,6 +17,8 @@ def init():
     # logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger('bigmuseum')
     logger.setLevel(logging.DEBUG)
+
+    atexit.register(logging.shutdown)
 
     # logger.handlers[0].setFormatter(tornado.log.LogFormatter())
 

@@ -1,5 +1,15 @@
 version: "3.8"
 services:
+  mongo:
+    image: mongo:4.4.3-bionic
+    container_name: bigmuseum-mongo
+    hostname: bigmuseum-mongo
+    ports:
+      - "27017:27017"
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "root"
+      MONGO_INITDB_ROOT_PASSWORD: "artsmia"
   web:
     container_name: bigmuseum
     hostname: bigmuseum

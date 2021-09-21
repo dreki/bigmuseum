@@ -30,6 +30,7 @@ RUN set -x \
   && yarn install --modules-folder=/node_modules
 ENV PATH="/node_modules/.bin:${PATH}"
 
+# Use Python venv when connecting to this container via shell.
 RUN set -x \
   && echo "#!/usr/bin/which bash" > /root/.bashrc \
   && echo "PS1=\"\w # \"" > /root/.bashrc \

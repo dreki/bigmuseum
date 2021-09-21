@@ -22,13 +22,6 @@ class LoginHandler(BaseHandler):
 
 class FinishLoginHandler(BaseHandler):
     async def get(self):
-        # self.get_query_argument()
-        # logger.debug(f'GET {self.get_}')
-        # logger.debug(f'> GET {self.request.query_arguments}')
-
-        # logger.debug(
-        #     f'> GET {self.get_argument("state")} {self.get_argument("code")}')
-
         # Get access token, so we can access the Reddit API.
         state: str = self.get_argument('state')
         code: str = self.get_argument('code')
@@ -41,16 +34,11 @@ class FinishLoginHandler(BaseHandler):
                                 data={'grant_type': 'authorization_code',
                                       'code': code,
                                       'redirect_uri': 'http://localhost:8888/login/complete'})
-            logger.debug(f'> response:')
-            logger.debug(response)
-            logger.debug(response.json())
             credentials: RedditCredentials = RedditCredentials.from_json(
                 response.json())
-            logger.debug(credentials)
-            # self.set_reddit_credentials(response.json())
+            logger.debug(f'> credentials {credentials}')
+            logger.debug(f'> state {state}')
             self._reddit_credentials = credentials
-        # logger.info('info')
-        # logger.debug('debug')
         self.finish('GET')
 
     async def post(self):
