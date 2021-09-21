@@ -2,6 +2,7 @@ import tornado.web
 from utils.log import logger
 import httpx
 from handlers.base import BaseHandler
+from utils.reddit.models import RedditCredentials
 
 
 class LoginHandler(BaseHandler):
@@ -42,6 +43,12 @@ class FinishLoginHandler(BaseHandler):
                                       'redirect_uri': 'http://localhost:8888/login/complete'})
             logger.debug(f'> response:')
             logger.debug(response)
+            logger.debug(response.json())
+            credentials: RedditCredentials = RedditCredentials.from_json(
+                response.json())
+            logger.debug(credentials)
+            # self.set_reddit_credentials(response.json())
+            self._reddit_credentials = credentials
         # logger.info('info')
         # logger.debug('debug')
         self.finish('GET')
