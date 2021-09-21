@@ -1,11 +1,9 @@
-from typing import Collection, Optional
+from typing import Optional
 
 from motor.motor_asyncio import AsyncIOMotorClient
 from odmantic import AIOEngine
 
 from settings import settings
-from utils.log import logger
-import logging
 
 engine: Optional[AIOEngine] = None
 

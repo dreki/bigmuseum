@@ -28,7 +28,6 @@ class FinishLoginHandler(BaseHandler):
         async with httpx.AsyncClient() as http:
             response: httpx.Response = \
                 await http.post('https://www.reddit.com/api/v1/access_token',
-                                # headers={'Auth'},
                                 auth=(self.application.settings.get('reddit_client_id'),
                                       self.application.settings.get('reddit_secret')),
                                 data={'grant_type': 'authorization_code',
