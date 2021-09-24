@@ -1,3 +1,4 @@
+from models.session import Session
 import tornado.web
 from utils.log import logger
 import httpx
@@ -9,11 +10,12 @@ class LoginHandler(BaseHandler):
     """Handles initiating Reddit login."""
     async def get(self):
         # self.write('200')
+        session: Session = await self.get_session()
         url: str = (f'https://www.reddit.com/api/v1/authorize'
                     f'?client_id=McdKsmpEBaZYVv69oAMS6Q'
                     f'&response_type=code'
                     # f'&state=RANDOM_STRING'
-                    f'&state={self.session}'
+                    f'&state={session.key}'
                     f'&redirect_uri=http://localhost:8888/login/complete'
                     f'&duration=permanent'
                     f'&scope=history,identity,vote,read,report')
@@ -22,8 +24,8 @@ class LoginHandler(BaseHandler):
 
 class FinishLoginHandler(BaseHandler):
     async def get(self):
+        session: Session = await self.get_session(key=self.get_argument('state'))
         # Get access token, so we can access the Reddit API.
-        state: str = self.get_argument('state')
         code: str = self.get_argument('code')
         async with httpx.AsyncClient() as http:
             response: httpx.Response = \
@@ -36,7 +38,7 @@ class FinishLoginHandler(BaseHandler):
             credentials: RedditCredentials = RedditCredentials.from_json(
                 response.json())
             logger.debug(f'> credentials {credentials}')
-            logger.debug(f'> state {state}')
+            logger.debug(f'> session {session}')
             self._reddit_credentials = credentials
         self.finish('GET')
 

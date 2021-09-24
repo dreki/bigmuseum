@@ -2,6 +2,8 @@ from typing import Any, Awaitable, Optional
 from uuid import uuid4
 
 import tornado.web
+from db import AIOEngine, get_engine
+from models.session import Session
 from tornado import httputil
 from utils.reddit.models import RedditCredentials
 
@@ -24,10 +26,23 @@ class BaseHandler(tornado.web.RequestHandler):
         self._session = self.get_secure_cookie('session').decode('utf-8')
         return super().prepare()
 
-    @property
-    def session(self) -> Optional[str]:
-        """Return the current request's session ID."""
-        return self._session
+    # @property
+    # def session(self) -> Optional[str]:
+    #     """Return the current request's session ID."""
+    #     return self._session
+
+    async def get_session(self, key: Optional[str] = None) -> Session:
+        """Get the current user's `Session` record."""
+        engine: AIOEngine = await get_engine()
+        if not key:
+            key = self._session
+        session: Session = await engine.find_one(Session,
+                                                 Session.key == key)
+        # Create `Session` record if it's missing.
+        if not session:
+            session: Session = Session(key=key)
+            await engine.save(session)
+        return session
 
     @property
     def reddit_credentials(self) -> Optional[RedditCredentials]:

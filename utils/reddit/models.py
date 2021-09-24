@@ -1,6 +1,6 @@
 
 import inspect
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, asdict
 from enum import Enum
 from typing import Any, Dict, Mapping, Optional, Type, TypeVar
 
@@ -20,6 +20,9 @@ class Model:
             d: Dict[str, Any] = \
                 dict([(k, v) for k, v in d.items() if k in defined_attributes])
         return cls(**d)
+
+    def to_json(self) -> Dict:
+        return asdict(self)
 
 
 class TokenType(str, Enum):
