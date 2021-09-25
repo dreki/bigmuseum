@@ -1,10 +1,14 @@
-
 from datetime import datetime
 from typing import TypeVar
 
+from odmantic import EmbeddedModel as ODManticEmbeddedModel
 from odmantic import Model as ODManticModel
 
 ModelType = TypeVar('ModelType', bound='Model')
+
+
+class EmbeddedModel(ODManticEmbeddedModel):
+    pass
 
 
 class Model(ODManticModel):

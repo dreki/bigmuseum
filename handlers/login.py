@@ -1,9 +1,9 @@
-from models.session import Session
+from models.session import RedditCredentials, Session
 import tornado.web
 from utils.log import logger
 import httpx
 from handlers.base import BaseHandler
-from utils.reddit.models import RedditCredentials
+# from utils.reddit.models import RedditCredentials
 
 
 class LoginHandler(BaseHandler):
@@ -35,8 +35,10 @@ class FinishLoginHandler(BaseHandler):
                                 data={'grant_type': 'authorization_code',
                                       'code': code,
                                       'redirect_uri': 'http://localhost:8888/login/complete'})
-            credentials: RedditCredentials = RedditCredentials.from_json(
-                response.json())
+            # credentials: RedditCredentials = RedditCredentials.from_json(
+            #     response.json())
+            credentials: RedditCredentials = RedditCredentials.parse_obj(response.json())
+            session.reddit_credentials = credentials
             logger.debug(f'> credentials {credentials}')
             logger.debug(f'> session {session}')
             self._reddit_credentials = credentials
