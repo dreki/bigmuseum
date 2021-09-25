@@ -27,8 +27,6 @@ class RedditCredentials(EmbeddedModel):
         """In how many minutes will these credentials expire?"""
         return self.expires_in / 60
 
-    pass
-
 # class Session(TimestampingModel):
 
 
