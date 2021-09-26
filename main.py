@@ -4,6 +4,7 @@ import os
 import tornado.ioloop
 import tornado.options
 import tornado.web
+from tornado.web import url
 
 from handlers.base import BaseHandler
 from handlers.login import FinishLoginHandler, LoginHandler
@@ -37,8 +38,16 @@ def make_app() -> tornado.web.Application:
             (r'/login', LoginHandler),
             (r'/login/complete', FinishLoginHandler),
             # Alias for main app file.
-            (r'/app/(.*)', tornado.web.StaticFileHandler, {'path': static_path,
-                                                           'default_filename': 'index.html'})
+            # (
+            url(
+                r'/app/(.*)',
+                tornado.web.StaticFileHandler,
+                {
+                    'path': static_path,
+                    'default_filename': 'index.html',
+                },
+                name='app'
+            )
         ],
         static_path=os.path.join(os.path.dirname(__file__), 'dist'),
         **settings

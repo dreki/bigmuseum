@@ -5,7 +5,6 @@ import tornado.web
 from db import AIOEngine, get_engine
 from models.session import Session
 from tornado import httputil
-from utils.reddit.models import RedditCredentials
 
 
 class BaseHandler(tornado.web.RequestHandler):

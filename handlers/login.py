@@ -4,6 +4,7 @@ from utils.log import logger
 import httpx
 from handlers.base import BaseHandler
 # from utils.reddit.models import RedditCredentials
+from db import AIOEngine, get_engine
 
 
 class LoginHandler(BaseHandler):
@@ -24,6 +25,8 @@ class LoginHandler(BaseHandler):
 
 class FinishLoginHandler(BaseHandler):
     async def get(self):
+        # Get the engine here, in case it fails.
+        engine: AIOEngine = await get_engine()
         session: Session = await self.get_session(key=self.get_argument('state'))
         # Get access token, so we can access the Reddit API.
         code: str = self.get_argument('code')
@@ -39,10 +42,11 @@ class FinishLoginHandler(BaseHandler):
             #     response.json())
             credentials: RedditCredentials = RedditCredentials.parse_obj(response.json())
             session.reddit_credentials = credentials
+            await engine.save(session)
             logger.debug(f'> credentials {credentials}')
             logger.debug(f'> session {session}')
             self._reddit_credentials = credentials
-        self.finish('GET')
+        self.redirect(url=self.reverse_url('app', ''))
 
     async def post(self):
         self.finish('POST')
