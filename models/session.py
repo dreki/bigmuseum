@@ -1,11 +1,9 @@
-
 from datetime import datetime
 from enum import Enum
-from typing import Dict, Optional
+from typing import Optional
 
 from odmantic import Field
 
-# from models.model import TimestampingModel
 from models.model import EmbeddedModel, Model
 
 
@@ -27,15 +25,10 @@ class RedditCredentials(EmbeddedModel):
         """In how many minutes will these credentials expire?"""
         return self.expires_in / 60
 
-# class Session(TimestampingModel):
-
 
 class Session(Model):
     """A logged-in person's session."""
     key: str
-    # reddit_token: Optional[Dict]
     reddit_credentials: Optional[RedditCredentials]
-    # created_at: datetime.datetime
-    # updated_at: datetime.datetime
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)

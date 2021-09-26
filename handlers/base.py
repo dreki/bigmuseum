@@ -16,7 +16,6 @@ class BaseHandler(tornado.web.RequestHandler):
                  **kwargs: Any) -> None:
         super().__init__(application, request, **kwargs)
         self._session: Optional[str] = None
-        # self._reddit_credentials: Optional[RedditCredentials] = None
 
     async def prepare(self) -> Optional[Awaitable[None]]:
         """Perform common tasks for all requests."""
@@ -24,11 +23,6 @@ class BaseHandler(tornado.web.RequestHandler):
             self.set_secure_cookie('session', str(uuid4()))
         self._session = self.get_secure_cookie('session').decode('utf-8')
         return super().prepare()
-
-    # @property
-    # def session(self) -> Optional[str]:
-    #     """Return the current request's session ID."""
-    #     return self._session
 
     async def get_session(self, key: Optional[str] = None) -> Session:
         """Get the current user's `Session` record."""
@@ -42,13 +36,3 @@ class BaseHandler(tornado.web.RequestHandler):
             session: Session = Session(key=key)
             await engine.save(session)
         return session
-
-    # @property
-    # def reddit_credentials(self) -> Optional[RedditCredentials]:
-    #     """Return the currently-saved Reddit credentials, if present."""
-    #     return self._reddit_credentials
-
-    # @reddit_credentials.setter
-    # def reddit_credentials(self, val: RedditCredentials):
-    #     """Set some saved Reddit credentials."""
-    #     self._reddit_credentials = val

@@ -8,24 +8,15 @@ ModelType = TypeVar('ModelType', bound='Model')
 
 
 class EmbeddedModel(ODManticEmbeddedModel):
+    """Base embedded model behavior."""
     pass
 
 
 class Model(ODManticModel):
+    """Base model behavior."""
     async def pre_save(self):
-        # raise NotImplementedError()
         now: datetime = datetime.utcnow()
         if hasattr(self, 'created_at') and not self.created_at:
             self.created_at = now
         if hasattr(self, 'updated_at'):
             self.updated_at = now
-
-
-# class TimestampingModel(Model):
-#     """A `Model` that automatically sets `created_at` and `updated_at`, if present."""
-#     async def pre_save(self):
-#         now: datetime = datetime.utcnow()
-#         if hasattr(self, 'created_at') and not self.created_at:
-#             self.created_at = now
-#         if hasattr(self, 'updated_at'):
-#             self.updated_at = now

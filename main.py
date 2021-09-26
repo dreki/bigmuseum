@@ -51,10 +51,6 @@ def make_app() -> tornado.web.Application:
         ],
         static_path=os.path.join(os.path.dirname(__file__), 'dist'),
         **settings
-        # debug=True,
-        # reddit_client_id=os.environ.get('REDDIT_CLIENT_ID', None),
-        # reddit_secret=os.environ.get('REDDIT_SECRET', 'None'),
-        # cookie_secret='f3be6678-38cb-4141-ba1b-8691e302407d'
     )
 
 

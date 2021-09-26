@@ -1,21 +1,17 @@
-from models.session import RedditCredentials, Session
-import tornado.web
-from utils.log import logger
 import httpx
-from handlers.base import BaseHandler
-# from utils.reddit.models import RedditCredentials
 from db import AIOEngine, get_engine
+from models.session import RedditCredentials, Session
+
+from handlers.base import BaseHandler
 
 
 class LoginHandler(BaseHandler):
     """Handles initiating Reddit login."""
     async def get(self):
-        # self.write('200')
         session: Session = await self.get_session()
         url: str = (f'https://www.reddit.com/api/v1/authorize'
                     f'?client_id=McdKsmpEBaZYVv69oAMS6Q'
                     f'&response_type=code'
-                    # f'&state=RANDOM_STRING'
                     f'&state={session.key}'
                     f'&redirect_uri=http://localhost:8888/login/complete'
                     f'&duration=permanent'
@@ -38,13 +34,9 @@ class FinishLoginHandler(BaseHandler):
                                 data={'grant_type': 'authorization_code',
                                       'code': code,
                                       'redirect_uri': 'http://localhost:8888/login/complete'})
-            # credentials: RedditCredentials = RedditCredentials.from_json(
-            #     response.json())
             credentials: RedditCredentials = RedditCredentials.parse_obj(response.json())
             session.reddit_credentials = credentials
             await engine.save(session)
-            logger.debug(f'> credentials {credentials}')
-            logger.debug(f'> session {session}')
             self._reddit_credentials = credentials
         self.redirect(url=self.reverse_url('app', ''))
 
