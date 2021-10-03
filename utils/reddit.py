@@ -47,6 +47,7 @@ class AsyncReddit(praw.Reddit):
     def __getattribute__(self, name: str) -> Any:
         original_attribute = super().__getattribute__(name)
         logger.debug(f'> __getattribute__ {getattr(original_attribute, "__name__", None)}')
+        self._check_for_async
         logger.debug(f'  > {original_attribute}')
         # if getattr(original_attribute, '__name__', None) not in ('subreddit',):
         #     return original_attribute
