@@ -8,7 +8,7 @@ from tornado.web import url
 
 from handlers.base import BaseHandler
 from handlers.login import FinishLoginHandler, LoginHandler
-from handlers.new_post import NewPostsHandler
+from handlers.new_posts import NewPostsHandler
 from settings import settings
 
 logger = logging.getLogger(__name__)
