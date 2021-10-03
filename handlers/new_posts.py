@@ -6,10 +6,10 @@ from concurrent.futures import Executor, ThreadPoolExecutor
 # from praw.models.helpers import SubredditHelper
 from asyncpraw import Reddit
 from asyncpraw.models.helpers import SubredditHelper
+from asyncpraw.reddit import Subreddit, Submission
 from models.session import Session
 from settings import settings
 from utils.log import logger
-from utils.reddit import AsyncReddit
 
 from handlers.base import BaseHandler
 
@@ -41,7 +41,22 @@ class NewPostsHandler(BaseHandler):
             user_agent='bigmuseum by u/parsifal'
         )
         # r_museum: SubredditHelper = await reddit.subreddit('museum')
-        r_museum: SubredditHelper = await reddit.subreddit('museum')
-        logger.debug(f'> museum {dict(r_museum)}')
+        # r_museum: SubredditHelper = await reddit.subreddit('museum',
+        r_museum: Subreddit = await reddit.subreddit('museum')
+        #  fetch=True)
+        # logger.debug(f'> museum {dict(r_museum)}')
+        logger.debug(dir(r_museum))
+        # async for post in r_museum.new():
+        first: bool = True
+        async for post in r_museum.hot():
+            post: Submission
+            logger.debug(f'> {post.title} {post.url}')
+            # if first:
+            #     logger.debug(dir(post))
+            #     logger.debug(post.media)
+            #     logger.debug(post.media_embed)
+            #     logger.debug(post.media_only)
+            #     logger.debug(post.url)
+            first = False
 
         self.finish('hello')
