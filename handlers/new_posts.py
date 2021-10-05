@@ -2,14 +2,17 @@
 import asyncio
 from asyncio.events import AbstractEventLoop
 from concurrent.futures import Executor, ThreadPoolExecutor
+from datetime import datetime
+from typing import List
 
 # from praw.models.helpers import SubredditHelper
 from asyncpraw import Reddit
 from asyncpraw.models.helpers import SubredditHelper
-from asyncpraw.reddit import Subreddit, Submission
+from asyncpraw.reddit import Submission, Subreddit
 from models.session import Session
 from settings import settings
 from utils.log import logger
+from utils.view_models.post import Post
 
 from handlers.base import BaseHandler
 
@@ -48,9 +51,17 @@ class NewPostsHandler(BaseHandler):
         logger.debug(dir(r_museum))
         # async for post in r_museum.new():
         first: bool = True
-        async for post in r_museum.hot():
-            post: Submission
-            logger.debug(f'> {post.title} {post.url}')
+        posts: List[Post] = []
+        async for submission in r_museum.hot():
+            submission: Submission
+            logger.debug(f'> {submission.title} {submission.url} {submission.created} {submission.created_utc}')
+            # logger.debug(dir(post))
+
+            post = Post(title=submission.title,
+                        link=submission.url,
+                        created_at=datetime.fromtimestamp(submission.created_utc))
+
+            posts.append(post.to_dict())
             # if first:
             #     logger.debug(dir(post))
             #     logger.debug(post.media)
@@ -59,4 +70,5 @@ class NewPostsHandler(BaseHandler):
             #     logger.debug(post.url)
             first = False
 
-        self.finish('hello')
+        # self.finish('hello')
+        self.finish({'items': posts})
