@@ -15,7 +15,9 @@ class Posts extends React.Component {
         return (
             <>
                 <div>Posts</div>
-                {posts}
+                <div className={'flex'}>
+                    {posts}
+                </div>
             </>
         );
     }
