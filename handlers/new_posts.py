@@ -71,4 +71,7 @@ class NewPostsHandler(BaseHandler):
             first = False
 
         # self.finish('hello')
-        self.finish({'items': posts})
+
+        # self.finish({'items': posts})
+        # self.finish(dumps({'items': posts}))
+        await self.json({'items': posts})

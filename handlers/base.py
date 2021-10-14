@@ -1,10 +1,12 @@
-from typing import Any, Awaitable, Optional
+from typing import Any, Awaitable, Dict, Optional
 from uuid import uuid4
 
 import tornado.web
 from db import AIOEngine, get_engine
 from models.session import Session
 from tornado import httputil
+import json
+import datetime
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -36,3 +38,13 @@ class BaseHandler(tornado.web.RequestHandler):
             session: Session = Session(key=key)
             await engine.save(session)
         return session
+
+    def _encode_as_json(obj: Any) -> str:
+        if isinstance(obj, datetime.datetime):
+            obj: datetime.datetime
+            return obj.isoformat()
+        raise TypeError(f'Unexpected type {type(obj)}.')
+
+    async def json(self, payload: Dict) -> None:
+        self.set_header('Content-Type', 'application/json')
+        return self.finish(json.dumps(payload, default=str))
