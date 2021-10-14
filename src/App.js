@@ -1,5 +1,6 @@
 
 import React from "react";
+import Posts from './components/Posts';
 
 class App extends React.Component {
   render() {
@@ -9,6 +10,10 @@ class App extends React.Component {
         <h1 className="text-4xl text-white bg-black">
           Hello {name}
         </h1>
+        <div className="card">
+          Reddit post card
+        </div>
+        <Posts posts={[{}]} />
       </>
     );
   }
