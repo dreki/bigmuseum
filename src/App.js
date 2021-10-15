@@ -1,6 +1,7 @@
 
 import React from "react";
 import Posts from './components/Posts';
+import Test from './components/Test';
 
 class App extends React.Component {
   render() {
@@ -13,6 +14,7 @@ class App extends React.Component {
         <div className="card">
           Reddit post card
         </div>
+        <Test />
         <Posts posts={[{}]} />
       </>
     );

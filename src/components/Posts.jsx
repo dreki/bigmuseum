@@ -9,16 +9,14 @@ class Posts extends React.Component {
     render() {
         /** @type {Array} */
         let posts = this.props.posts || [];
-        console.log(`> posts:`);
-        console.log(posts);
-        posts = posts.map(post => <Post {...post} />);
+        posts = posts.map((post, i) => (<Post key={i} {...post} />));
         return (
-            <>
+            <div>
                 <div>Posts</div>
                 <div className={'flex'}>
                     {posts}
                 </div>
-            </>
+            </div>
         );
     }
 }
