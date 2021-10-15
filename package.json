@@ -12,6 +12,8 @@
     "build-prod": "parcel build src/index.html --public-url /static/"
   },
   "dependencies": {
+    "@types/react": "^17.0.2",
+    "cross-fetch": "^3.1.4",
     "parcel": "^2.0.0-rc.0",
     "postcss": "^8.3.6",
     "postcss-font-magician": "^3.0.0",
