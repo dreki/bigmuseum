@@ -52,7 +52,7 @@ class NewPostsHandler(BaseHandler):
         # async for post in r_museum.new():
         first: bool = True
         posts: List[Post] = []
-        async for submission in r_museum.hot():
+        async for submission in r_museum.hot(limit=10):
             submission: Submission
             logger.debug(f'> {submission.title} {submission.url} {submission.created} {submission.created_utc}')
             # logger.debug(dir(post))

@@ -9,7 +9,8 @@ class Post extends React.Component {
     render() {
         return (
             <div className={'border rounded shadow-sm px-2 py-1'}>
-                <span>I am a post</span>
+                <span>{this.props.title}</span>
+                <img src={this.props.link} />
             </div>
         )
     }

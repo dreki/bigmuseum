@@ -9,15 +9,21 @@ interface IAppProps {
 }
 
 interface IAppState {
+  posts: Array<object>
 }
 
 class App extends React.Component<IAppProps, IAppState> {
+  state: IAppState = {
+    posts: []
+  }
 
   public async componentDidMount(): Promise<void> {
     const response = await fetch('/api/posts/new');
     console.log(`> response:`);
     console.log(response);
-    console.log(await response.json());
+    const posts: Array<object> = (await response.json()).items;
+    console.log(posts);
+    this.setState({ posts: posts })
   }
 
   render() {
@@ -31,7 +37,7 @@ class App extends React.Component<IAppProps, IAppState> {
           Reddit post card
         </div>
         <Test message={'fun'} />
-        <Posts posts={[{}]} />
+        <Posts posts={this.state.posts} />
       </>
     );
   }
