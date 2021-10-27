@@ -11,6 +11,7 @@ local.env
 __pycache__
 .vscode
 .local
+.idea
 
 # OS generated files
 .DS_Store
@@ -20,3 +21,4 @@ __pycache__
 .Trashes
 ehthumbs.db
 Thumbs.db
+*.icloud
