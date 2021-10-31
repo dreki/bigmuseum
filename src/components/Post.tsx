@@ -1,4 +1,6 @@
 import * as React from 'react';
+import ContentLoader from 'react-content-loader';
+import PreloadImage from './PreloadImage';
 // import ReactPlaceholder from 'react-placeholder';
 
 interface IPostProps {
@@ -17,10 +19,12 @@ class Post extends React.Component<IPostProps, IPostState> {
     //     imageLoaded: false
     // }
 
-    constructor(props) {
+    constructor(props: IPostProps) {
         super(props);
         console.log(props);
-        this.state = {imageLoaded: false};
+        this.state = {
+            imageLoaded: false
+        };
     }
 
     render__DEP() {
@@ -52,18 +56,37 @@ class Post extends React.Component<IPostProps, IPostState> {
         )
     }
 
-    onImageLoad(e: React.SyntheticEvent) {
+    onImageLoaded(e: React.SyntheticEvent) {
+        // onImageLoad(e: Event) {
         console.log(`> onImageLoad`);
-        this.setState({imageLoaded: true})
+        this.setState({ imageLoaded: true })
     }
 
     render() {
-        const img = (
-            <img alt={`Artwork: ${this.props.title}`}
-                 className={'w-full'}
-                 src={this.props.link}
-                 onLoad={this.onImageLoad.bind(this)}/>
+
+        let imgClass: string = 'w-full';
+
+        // const img = (
+        //     <img alt={`Artwork: ${this.props.title}`}
+        //         className={'w-full'}
+        //         src={this.props.link}
+        //         onLoad={this.onImageLoaded.bind(this)} />
+        // );
+
+        // const img = new Image();
+        // img.onload = this.onImageLoad;
+
+        // const img = React.createElement(
+        //     'img',
+        //     { onLoad: this.onImageLoad.bind(this) }
+        // );
+
+        const imageContentLoader: JSX.Element = (
+            <ContentLoader viewBox="0 0 450 400">
+                <rect x="0" y="0" rx="0" ry="0" width="450" height="400" />
+            </ContentLoader>
         );
+
         return (
             // <div>
             //     <img alt={`Artwork: ${this.props.title}`}
@@ -82,11 +105,19 @@ class Post extends React.Component<IPostProps, IPostState> {
                 {/*    <span>post</span>*/}
                 {/*</div>*/}
                 {/*<div className={'border rounded shadow-sm mr-2 mb-2 ml-2 pt-2 pb-2'}>*/}
-                <div className={'border rounded shadow-sm pb-2'}>
+                <div className={'border rounded shadow-sm mb-4 bi-avoid'}>
                     {/*<ReactPlaceholder type={'rect'} ready={this.state.imageLoaded}>*/}
                     {/*    {img}*/}
                     {/*</ReactPlaceholder>*/}
-                    {img}
+
+                    <span>{this.props.title}</span>
+
+                    {/* {!this.state.imageLoaded && <ContentLoader className={'m-2'} />} */}
+                    {/* {!this.state.imageLoaded && imageContentLoader} */}
+                    {!this.state.imageLoaded && imageContentLoader}
+                    <PreloadImage src={this.props.link}
+                        onImageLoaded={this.onImageLoaded.bind(this)} />
+                    {/* {img} */}
                 </div>
             </div>
         );

@@ -17,10 +17,10 @@
     "postcss": "^8.3.6",
     "postcss-font-magician": "^3.0.0",
     "react": "^17.0.2",
+    "react-content-loader": "^6.0.3",
     "react-dom": "^17.0.2",
-    "react-masonry-component": "^6.3.0",
-    "react-placeholder": "^4.1.0",
     "tailwindcss": "^2.2.14",
+    "tailwindcss-break": "^1.0.0",
     "tailwindcss-multi-column": "^1.0.2",
     "uuid": "^8.3.2"
   },
