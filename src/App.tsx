@@ -8,7 +8,7 @@ interface IAppProps {
 }
 
 interface IAppState {
-    posts: Array<object>
+    posts: Array<{ title: string, link: string }>
 }
 
 class App extends React.Component<IAppProps, IAppState> {
@@ -17,16 +17,14 @@ class App extends React.Component<IAppProps, IAppState> {
     }
 
     public async componentDidMount(): Promise<void> {
+        // Load and set posts.
         const response = await fetch('/api/posts/new');
-        console.log(`> response:`);
-        console.log(response);
-        const posts: Array<object> = (await response.json()).items;
-        console.log(posts);
-        this.setState({posts: posts})
+        const posts: Array<{ title: string, link: string }> = (await response.json()).items;
+        this.setState({ posts: posts })
     }
 
     render() {
-        const {name} = this.props;
+        const { name } = this.props;
         return (
             <>
                 <h1 className="text-4xl text-white bg-black">
@@ -35,8 +33,8 @@ class App extends React.Component<IAppProps, IAppState> {
                 <div className="card">
                     Reddit post card
                 </div>
-                <Test message={'fun'}/>
-                <Posts posts={this.state.posts}/>
+                <Test message={'fun'} />
+                <Posts posts={this.state.posts} />
             </>
         );
     }

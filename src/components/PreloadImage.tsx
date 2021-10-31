@@ -23,11 +23,6 @@ class PreloadImage extends React.Component<IPreloadImageProps, IPreloadImageStat
         }
     }
 
-    onError(e: React.SyntheticEvent) {
-        console.log(`> error`);
-        console.log(e);
-    }
-
     render() {
         let className: string = 'hidden';
         if (this.state.imageLoaded) {
@@ -35,12 +30,9 @@ class PreloadImage extends React.Component<IPreloadImageProps, IPreloadImageStat
         }
         return (
             <>
-                {/* <img src={this.props.src} /> */}
-                {/* <img {...this.props} */}
                 <img src={this.props.src}
                     className={`${this.props.className} ${className}`}
-                    onLoad={this.onImageLoad.bind(this)}
-                    onError={this.onError.bind(this)} />
+                    onLoad={this.onImageLoad.bind(this)} />
             </>
         )
     }
