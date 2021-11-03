@@ -34,6 +34,7 @@ class App extends React.Component<IAppProps, IAppState> {
                     Reddit post card
                 </div>
                 <Test message={'fun'} />
+                <h2 className={'text-xl'}>New Arrivals</h2>
                 <Posts posts={this.state.posts} />
             </>
         );

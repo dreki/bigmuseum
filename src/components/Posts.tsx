@@ -20,7 +20,6 @@ class Posts extends React.Component<IPostsProps, IPostsState> {
             (this.props.posts ?? []).map((post, i) => (<Post key={i} {...post} />));
         return (
             <div>
-                <div>Posts</div>
                 <div className={'col-count-3 col-gap-2'}>
                     {posts}
                 </div>
