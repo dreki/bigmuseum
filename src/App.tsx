@@ -27,14 +27,7 @@ class App extends React.Component<IAppProps, IAppState> {
         const { name } = this.props;
         return (
             <>
-                <h1 className="text-4xl text-white bg-black">
-                    Hello {name}
-                </h1>
-                <div className="card">
-                    Reddit post card
-                </div>
-                <Test message={'fun'} />
-                <h2 className={'text-xl'}>New Arrivals</h2>
+                <h2 className={'text-2xl mt-5 mb-4'}>New Arrivals</h2>
                 <Posts posts={this.state.posts} />
             </>
         );
