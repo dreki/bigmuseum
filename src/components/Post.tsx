@@ -4,13 +4,15 @@ import PreloadImage from './PreloadImage';
 // import ReactPlaceholder from 'react-placeholder';
 
 interface IPostProps {
-    title: string,
-    link: string,
-    // key: number,
+    id: string;
+    title: string;
+    link: string;
+    // key: number;
+    onTrashPost?: ((postId: string) => void),
 }
 
 interface IPostState {
-    imageLoaded: boolean
+    imageLoaded: boolean;
 }
 
 
@@ -25,6 +27,12 @@ class Post extends React.Component<IPostProps, IPostState> {
 
     onImageLoaded(e: React.SyntheticEvent) {
         this.setState({ imageLoaded: true })
+    }
+
+    onTrashPost(e: React.SyntheticEvent) {
+        if (this.props.onTrashPost) {
+            this.props.onTrashPost(this.props.id);
+        }
     }
 
     render() {
@@ -58,6 +66,7 @@ class Post extends React.Component<IPostProps, IPostState> {
                     */}
                     <button
                         className={'w-1/3 text-moody-blue-500 bg-transparent border-t border-b border-r border-moody-blue-500 hover:bg-moody-blue-500 hover:text-white active:bg-moody-blue-600 font-bold uppercase text-sm px-6 py-3 rounded-br outline-none focus:outline-none ease-linear transition-all duration-150'}
+                        onClick={this.onTrashPost.bind(this)}
                     >
                         🗑
                     </button>

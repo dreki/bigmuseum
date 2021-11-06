@@ -54,10 +54,12 @@ class NewPostsHandler(BaseHandler):
         posts: List[Post] = []
         async for submission in r_museum.hot(limit=15):
             submission: Submission
-            logger.debug(f'> {submission.title} {submission.url} {submission.created} {submission.created_utc}')
+            logger.debug(
+                f'> {submission.title} {submission.id} {submission.url} {submission.created} {submission.created_utc}')
             # logger.debug(dir(post))
 
-            post = Post(title=submission.title,
+            post = Post(id=submission.id,
+                        title=submission.title,
                         link=submission.url,
                         created_at=datetime.fromtimestamp(submission.created_utc))
 

@@ -12,6 +12,7 @@
     "build-prod": "parcel build src/index.html --public-url /static/"
   },
   "dependencies": {
+    "axios": "^0.24.0",
     "cross-fetch": "^3.1.4",
     "parcel": "^2.0.0-rc.0",
     "postcss": "^8.3.6",

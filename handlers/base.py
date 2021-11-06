@@ -1,12 +1,16 @@
+"""Holds shared `RequestHandler` functionality."""
+import datetime
+import json
 from typing import Any, Awaitable, Dict, Optional
 from uuid import uuid4
 
+import humps
 import tornado.web
+from asyncpraw.reddit import Reddit
 from db import AIOEngine, get_engine
 from models.session import Session
+from settings import settings
 from tornado import httputil
-import json
-import datetime
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -46,5 +50,24 @@ class BaseHandler(tornado.web.RequestHandler):
         raise TypeError(f'Unexpected type {type(obj)}.')
 
     async def json(self, payload: Dict) -> None:
+        """Send a JSON response."""
         self.set_header('Content-Type', 'application/json')
+        payload = humps.camelize(payload)
         return self.finish(json.dumps(payload, default=str))
+
+    async def get_json_body(self) -> Dict:
+        """Get the JSON body of the request."""
+        j: Dict = json.loads(self.request.body.decode('utf-8'))
+        j = humps.decamelize(j)
+        return j
+
+    async def make_reddit_client(self) -> Reddit:
+        """Create a `Reddit` client."""
+        session: Session = await self.get_session()
+        reddit: Reddit = Reddit(
+            client_id=settings.get('reddit_client_id'),
+            client_secret=settings.get('reddit_secret'),
+            refresh_token=session.reddit_credentials.refresh_token,
+            user_agent='bigmuseum by u/parsifal'
+        )
+        return reddit

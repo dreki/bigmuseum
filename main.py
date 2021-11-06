@@ -9,6 +9,7 @@ from tornado.web import url
 from handlers.base import BaseHandler
 from handlers.login import FinishLoginHandler, LoginHandler
 from handlers.new_posts import NewPostsHandler
+from handlers.collection_items import CollectionItemsHandler
 from settings import settings
 
 logger = logging.getLogger(__name__)
@@ -39,6 +40,7 @@ def make_app() -> tornado.web.Application:
             (r'/login', LoginHandler),
             (r'/login/complete', FinishLoginHandler),
             (r'/api/posts/new', NewPostsHandler),
+            (r'/api/collection/items', CollectionItemsHandler),
             # Alias for main app file.
             # (
             url(

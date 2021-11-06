@@ -10,6 +10,7 @@ from datetime import datetime
 class Post(ViewModel):
     """Represents a Reddit post."""
 
+    id: str
     title: str
     created_at: datetime
     link: Optional[str] = None
