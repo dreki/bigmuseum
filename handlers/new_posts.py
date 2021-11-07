@@ -17,6 +17,14 @@ from utils.view_models.post import Post
 from handlers.base import BaseHandler
 
 
+# class PostsHandler(BaseHandler):
+#     """Handles requests for posts from Reddit."""
+
+#     def __init__(self, loop: AbstractEventLoop, executor: Executor):
+#         """Initialize the handler."""
+#         super().__init__(loop, executor)
+
+
 class NewPostsHandler(BaseHandler):
     """Returns new Reddit posts, given a person's account."""
 

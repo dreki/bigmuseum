@@ -30,7 +30,9 @@ class App extends React.Component<IAppProps, IAppState> {
 
     async onTrashPost(postId: string) {
         // const response = await fetch('/api/collection', { method: 'POST' })
-        const response = await axios.post('/api/collection/items', { postId });
+
+        // const response = await axios.post('/api/collection/items', { postId });
+        const response = await axios.delete(`/api/posts/abc123`);
     }
 
     render() {

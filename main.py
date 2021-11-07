@@ -1,5 +1,6 @@
 import logging
 import os
+from handlers.posts import PostsHandler
 
 import tornado.ioloop
 import tornado.options
@@ -40,6 +41,7 @@ def make_app() -> tornado.web.Application:
             (r'/login', LoginHandler),
             (r'/login/complete', FinishLoginHandler),
             (r'/api/posts/new', NewPostsHandler),
+            (r'/api/posts/(?P<post_id>[^/]+)', PostsHandler),
             (r'/api/collection/items', CollectionItemsHandler),
             # Alias for main app file.
             # (
