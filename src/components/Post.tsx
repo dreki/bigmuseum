@@ -1,7 +1,8 @@
 import * as React from 'react';
 import ContentLoader from 'react-content-loader';
-import { CSSTransition } from 'react-transition-group';
+import {CSSTransition} from 'react-transition-group';
 import PreloadImage from './PreloadImage';
+
 // import ReactPlaceholder from 'react-placeholder';
 
 /**
@@ -22,6 +23,69 @@ interface IPostProps {
 interface IPostState {
     imageLoaded: boolean;
     unloading: boolean;
+}
+
+/**
+ * typedef for Image props
+ */
+interface IImageProps {
+    imageLoaded: boolean;
+    renderImageContentLoader: React.ReactNode;
+    src: string;
+    onImageLoaded: any;
+    title: string;
+}
+
+/**
+ * typedef for TrashButton props
+ */
+interface ITrashButtonProps {
+    onClick: any;
+}
+
+/**
+ * Image component
+ * @param props {IImageProps}
+ * @constructor
+ */
+function Image(props: IImageProps) {
+
+    return <div className={"border border-moody-blue-500 rounded border-b-0 rounded-b-none pb-1.5"}>
+        {!props.imageLoaded && props.renderImageContentLoader}
+        <PreloadImage src={props.src} onImageLoaded={props.onImageLoaded}/>
+        <h3 className={"text-l font-work-sans italic p-1 pr-2 pl-2"}>{props.title}</h3>
+    </div>;
+}
+
+/**
+ * TrashButton component
+ * @param props {ITrashButtonProps}
+ * @constructor
+ */
+function TrashButton(props: ITrashButtonProps) {
+    return (
+        <button
+            className={"w-1/3 text-moody-blue-500 bg-transparent border-t border-b border-r border-moody-blue-500 hover:bg-moody-blue-500 hover:text-white active:bg-moody-blue-600 font-bold uppercase text-sm px-6 py-3 rounded-br outline-none focus:outline-none ease-linear transition-all duration-150"}
+            onClick={props.onClick}>
+            🗑
+        </button>
+    );
+}
+
+/**
+ * typedef for CollectButton props
+ */
+interface ICollectButtonProps {
+    onClick: (e: React.SyntheticEvent) => void;
+}
+
+function CollectButton(props: ICollectButtonProps) {
+    return <button
+        className={"w-2/3 text-moody-blue-500 bg-transparent border-l border-t border-r border-b border-moody-blue-500 hover:bg-moody-blue-500 hover:text-white active:bg-moody-blue-600 font-bold uppercase text-sm px-6 py-3 rounded-bl outline-none focus:outline-none ease-linear transition-all duration-150"}
+        onClick={props.onClick}
+    >
+        Add
+    </button>;
 }
 
 /**
@@ -46,7 +110,7 @@ class Post extends React.Component<IPostProps, IPostState> {
      */
     public componentWillUnmount() {
         // Note that we're unloading.
-        this.setState({ unloading: true });
+        this.setState({unloading: true});
     }
 
     /**
@@ -55,7 +119,7 @@ class Post extends React.Component<IPostProps, IPostState> {
      * @returns {void}
      */
     onImageLoaded = (e: React.SyntheticEvent): void => {
-        this.setState({ imageLoaded: true })
+        this.setState({imageLoaded: true})
     }
 
     /**
@@ -65,7 +129,9 @@ class Post extends React.Component<IPostProps, IPostState> {
      */
     onCollectPost = (e: React.SyntheticEvent): void => {
         e.preventDefault();
-        if (!this.props.onCollectPost) { return; }
+        if (!this.props.onCollectPost) {
+            return;
+        }
         this.props.onCollectPost(this.props.id);
     }
 
@@ -76,33 +142,10 @@ class Post extends React.Component<IPostProps, IPostState> {
      */
     onTrashPost(e: React.SyntheticEvent): void {
         e.preventDefault();
-        if (!this.props.onTrashPost) { return; }
+        if (!this.props.onTrashPost) {
+            return;
+        }
         this.props.onTrashPost(this.props.id);
-    }
-
-    private renderCollectButton() {
-        return <button
-            className={'w-2/3 text-moody-blue-500 bg-transparent border-l border-t border-r border-b border-moody-blue-500 hover:bg-moody-blue-500 hover:text-white active:bg-moody-blue-600 font-bold uppercase text-sm px-6 py-3 rounded-bl outline-none focus:outline-none ease-linear transition-all duration-150'} onClick={this.onCollectPost}
-        >
-            Add
-        </button>;
-    }
-    private renderImage() {
-        return (
-            <div className={'border border-moody-blue-500 rounded border-b-0 rounded-b-none pb-1.5'}>
-                {!this.state.imageLoaded && this.renderImageContentLoader()}
-                <PreloadImage src={this.props.link} onImageLoaded={this.onImageLoaded.bind(this)} />
-                <h3 className={'text-l font-work-sans italic p-1 pr-2 pl-2'}>{this.props.title}</h3>
-            </div>
-        );
-    }
-
-    private renderImageContentLoader(): React.ReactNode {
-        return (
-            <ContentLoader viewBox="0 0 450 400">
-                <rect x="0" y="0" rx="0" ry="0" width="450" height="400" />
-            </ContentLoader>
-        );
     }
 
     /**
@@ -113,28 +156,25 @@ class Post extends React.Component<IPostProps, IPostState> {
         return (
             <CSSTransition in={!this.state.unloading} timeout={500} classNames={'post-animation'}>
                 <div className={'bi-avoid shadow-sm rounded'}>
-                    {this.renderImage()}
+                    <Image imageLoaded={this.state.imageLoaded}
+                           renderImageContentLoader={this.renderImageContentLoader()} src={this.props.link}
+                           onImageLoaded={this.onImageLoaded.bind(this)} title={this.props.title}/>
                     <div className={'flex items-center justify-center mb-4'}>
-                        {this.renderCollectButton()}
-                        {/* 
-                    <button
-                        className={'w-1/3 text-moody-blue-500 bg-transparent border border-solid border-moody-blue-500 hover:bg-moody-blue-500 hover:text-white active:bg-moody-blue-600 font-bold uppercase text-sm px-6 py-3 outline-none focus:outline-none ease-linear transition-all duration-150'}
-                    >
-                        Center
-                    </button>
-                    */}
-                        <button
-                            className={'w-1/3 text-moody-blue-500 bg-transparent border-t border-b border-r border-moody-blue-500 hover:bg-moody-blue-500 hover:text-white active:bg-moody-blue-600 font-bold uppercase text-sm px-6 py-3 rounded-br outline-none focus:outline-none ease-linear transition-all duration-150'}
-                            onClick={this.onTrashPost.bind(this)}
-                        >
-                            🗑
-                        </button>
+                        <CollectButton onClick={this.onCollectPost}/>
+                        <TrashButton onClick={this.onTrashPost.bind(this)}/>
                     </div>
                 </div>
             </CSSTransition>
         );
     }
 
+    private renderImageContentLoader(): React.ReactNode {
+        return (
+            <ContentLoader viewBox="0 0 450 400">
+                <rect x="0" y="0" rx="0" ry="0" width="450" height="400"/>
+            </ContentLoader>
+        );
+    }
 
 
 }
