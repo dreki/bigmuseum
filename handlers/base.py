@@ -11,6 +11,7 @@ from db import AIOEngine, get_engine
 from models.session import Session
 from settings import settings
 from tornado import httputil
+from utils.log import logger
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -25,6 +26,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
     async def prepare(self) -> Optional[Awaitable[None]]:
         """Perform common tasks for all requests."""
+        # Print out cookie
         if not self.get_secure_cookie('session'):
             self.set_secure_cookie('session', str(uuid4()))
         self._session = self.get_secure_cookie('session').decode('utf-8')
@@ -38,6 +40,7 @@ class BaseHandler(tornado.web.RequestHandler):
         session: Session = await engine.find_one(Session,
                                                  Session.key == key)
         # Create `Session` record if it's missing.
+        logger.debug(f'> session: {session}')
         if not session:
             session: Session = Session(key=key)
             await engine.save(session)

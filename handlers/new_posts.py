@@ -44,6 +44,11 @@ class NewPostsHandler(BaseHandler):
         #                                         func=self._cool)
         # logger.debug(f'> result {result}')
 
+        # If no reddit credentials, return no auth
+        if not session.reddit_credentials:
+            self.set_status(401)
+            return
+
         # reddit: AsyncReddit = AsyncReddit(
         reddit = Reddit(
             client_id=settings.get('reddit_client_id'),

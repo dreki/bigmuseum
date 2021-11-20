@@ -28,11 +28,18 @@ class App extends React.Component<IAppProps, IAppState> {
         this.setState({ posts: posts });
     }
 
-    async onTrashPost(postId: string) {
+    onCollectPost = async (postId: string) => {
+    }
+
+    onTrashPost = async (postId: string) => {
         // const response = await fetch('/api/collection', { method: 'POST' })
 
         // const response = await axios.post('/api/collection/items', { postId });
-        const response = await axios.delete(`/api/posts/abc123`);
+        // const response = await axios.delete(`/api/posts/abc123`);
+        const response = await axios.delete(`/api/posts/${postId}`);
+        // Remove post from state.
+        const posts = this.state.posts.filter(post => post.id !== postId);
+        this.setState({ posts });
     }
 
     render() {
@@ -41,7 +48,8 @@ class App extends React.Component<IAppProps, IAppState> {
             <>
                 <h2 className={'text-2xl mt-5 mb-4'}>New Arrivals</h2>
                 <Posts posts={this.state.posts}
-                    onTrashPost={this.onTrashPost.bind(this)} />
+                    onCollectPost={this.onCollectPost}
+                    onTrashPost={this.onTrashPost} />
             </>
         );
     }
