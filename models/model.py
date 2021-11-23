@@ -14,6 +14,7 @@ class EmbeddedModel(ODManticEmbeddedModel):
 
 class Model(ODManticModel):
     """Base model behavior."""
+
     async def pre_save(self):
         now: datetime = datetime.utcnow()
         if hasattr(self, 'created_at') and not self.created_at:

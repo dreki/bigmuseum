@@ -7,11 +7,12 @@ from uuid import uuid4
 import humps
 import tornado.web
 from asyncpraw.reddit import Reddit
+from tornado import httputil
+
 from db import AIOEngine, get_engine
 from models.session import Session
-from settings import settings
-from tornado import httputil
 from utils.log import logger
+from utils.reddit import get_reddit
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -67,10 +68,6 @@ class BaseHandler(tornado.web.RequestHandler):
     async def make_reddit_client(self) -> Reddit:
         """Create a `Reddit` client."""
         session: Session = await self.get_session()
-        reddit: Reddit = Reddit(
-            client_id=settings.get('reddit_client_id'),
-            client_secret=settings.get('reddit_secret'),
-            refresh_token=session.reddit_credentials.refresh_token,
-            user_agent='bigmuseum by u/parsifal'
-        )
+        refresh_token = session.reddit_credentials.refresh_token
+        reddit = await get_reddit(refresh_token)
         return reddit
