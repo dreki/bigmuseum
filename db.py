@@ -9,6 +9,7 @@ engine: Optional[AIOEngine] = None
 
 
 class TimestampingAIOEngine(AIOEngine):
+
     async def save(self, instance: ModelType) -> ModelType:
         """Handle saving."""
         await instance.pre_save()
@@ -30,5 +31,5 @@ async def get_engine() -> AIOEngine:
                          f'@{settings.get("mongo_host")}/')
     client: AsyncIOMotorClient = AsyncIOMotorClient(connection_string)
     engine = TimestampingAIOEngine(motor_client=client,
-                                   database=settings.get('mongo_db'))
+                                   database=settings.get('mongo_db', 'bigmuseum'))
     return engine
