@@ -1,16 +1,17 @@
 import logging
 import os
-from handlers.posts import PostsHandler
 
 import tornado.ioloop
 import tornado.options
 import tornado.web
 from tornado.web import url
 
+import utils.periodic_post_download
 from handlers.base import BaseHandler
+from handlers.collection_items import CollectionItemsHandler
 from handlers.login import FinishLoginHandler, LoginHandler
 from handlers.new_posts import NewPostsHandler
-from handlers.collection_items import CollectionItemsHandler
+from handlers.posts import PostsHandler
 from settings import settings
 
 logger = logging.getLogger(__name__)
@@ -65,4 +66,7 @@ if __name__ == '__main__':
     app: tornado.web.Application = make_app()
     app.listen(8888)
     logger.info('Listening on 8888 ...')
+
+    utils.periodic_post_download.start()
+
     tornado.ioloop.IOLoop.current().start()

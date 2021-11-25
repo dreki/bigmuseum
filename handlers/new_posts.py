@@ -34,6 +34,11 @@ class NewPostsHandler(BaseHandler):
 
     async def get(self):
         """Handle GET request."""
+
+        #
+        # TODO: Get Posts from database instead of Reddit
+        #
+
         session: Session = await self.get_session()
 
         # aio_loop: AbstractEventLoop = asyncio.get_event_loop()

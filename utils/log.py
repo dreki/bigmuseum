@@ -3,7 +3,7 @@ import atexit
 import logging
 from typing import Optional
 
-logger: Optional[logging.Logger] = None
+logger: logging.Logger
 
 
 def init():

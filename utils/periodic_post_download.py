@@ -8,6 +8,7 @@ from db import AIOEngine, get_engine
 from models.post import Post
 from models.state import State
 
+from utils.log import logger
 from utils.reddit import get_reddit
 
 
@@ -34,20 +35,18 @@ async def _cache_posts():
         raise ValueError('Last run value is not a datetime, or is unexpectedly missing.')
 
     # Keep track of the last time we ran.
-    # new_last_run: State = State(key='last_post_cache', value={'when': datetime.datetime.now()})
     new_last_run_stamp: datetime.datetime = datetime.datetime.now()
 
     reddit: Reddit = await get_reddit()
     r_museum = await reddit.subreddit('museum')
-    async for post in r_museum.hot(limit=1):
+    logger.info('Caching posts from /r/museum')
+    async for post in r_museum.hot(limit=5):
         # Convert created_utc to a datetime.
         post_created_utc: datetime.datetime = datetime.datetime.fromtimestamp(post.created_utc)
         if post_created_utc < last_run.value:
-            # We've already cached this post.
-            print('.')
             continue
         post: Submission
-        print(f'> caching {post.title}')
+        logger.info(f'> caching {post.title}')
         cached_post: Post = Post(post_id=post.id,
                                  title=post.title,
                                  image_url=post.url,
@@ -57,11 +56,13 @@ async def _cache_posts():
         print(cached_post)
 
     # Save the last time we ran.
-    # print(f'> {new_last_run_stamp.strftime("%Y-%m-%d %H:%M:%S")}')
-    # new_last_run: State = State(key='last_post_cache', value={'when': new_last_run_stamp})
     last_run.value = new_last_run_stamp
     await db.save(last_run)
+
+    # Close the Reddit connection.
     await reddit.close()
+
+    logger.info('Finished caching posts from /r/museum')
 
 
 async def _do_periodically(interval_seconds, fn, *args, **kwargs):
