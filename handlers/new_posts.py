@@ -9,10 +9,13 @@ from typing import List
 from asyncpraw import Reddit
 from asyncpraw.models.helpers import SubredditHelper
 from asyncpraw.reddit import Submission, Subreddit
+from db import get_engine
+from models.post import Post
 from models.session import Session
+from odmantic.engine import AIOEngine
 from settings import settings
 from utils.log import logger
-from utils.view_models.post import Post
+from utils.view_models.post import Post as PostViewModel
 
 from handlers.base import BaseHandler
 
@@ -33,6 +36,13 @@ class NewPostsHandler(BaseHandler):
         return 'neat'
 
     async def get(self):
+        """Handle GET request."""
+        # Load `Post`s from the database
+        db: AIOEngine = await get_engine()
+        posts: List[Post] = await db.find(Post)
+        await self.json({'items': [p.dict() for p in posts]})
+
+    async def get__DEPRECATED(self):
         """Handle GET request."""
 
         #
@@ -69,17 +79,17 @@ class NewPostsHandler(BaseHandler):
         logger.debug(dir(r_museum))
         # async for post in r_museum.new():
         first: bool = True
-        posts: List[Post] = []
+        posts: List[PostViewModel] = []
         async for submission in r_museum.hot(limit=15):
             submission: Submission
             logger.debug(
                 f'> {submission.title} {submission.id} {submission.url} {submission.created} {submission.created_utc}')
             # logger.debug(dir(post))
 
-            post = Post(id=submission.id,
-                        title=submission.title,
-                        link=submission.url,
-                        created_at=datetime.fromtimestamp(submission.created_utc))
+            post = PostViewModel(id=submission.id,
+                                 title=submission.title,
+                                 link=submission.url,
+                                 created_at=datetime.fromtimestamp(submission.created_utc))
 
             posts.append(post.to_dict())
             # if first:
