@@ -1,7 +1,6 @@
 import * as React from "react";
 import Posts from './components/Posts';
 import Test from './components/Test';
-// import fetch from 'cross-fetch';
 import axios from 'axios';
 
 interface IAppProps {
@@ -25,7 +24,6 @@ class App extends React.Component<IAppProps, IAppState> {
 
     public async componentDidMount(): Promise<void> {
         // Load and set posts.
-        // const response = await fetch('/api/posts/new');
         const response = await axios.get('/api/posts/new');
         console.log(response);
 
