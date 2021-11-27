@@ -66,8 +66,5 @@ if __name__ == '__main__':
     app: tornado.web.Application = make_app()
     app.listen(8888)
     logger.info('Listening on 8888 ...')
-
-    # utils.periodic_post_download.start()
     tornado.ioloop.IOLoop.current().add_callback(utils.periodic_post_download.start)
-
     tornado.ioloop.IOLoop.current().start()

@@ -75,10 +75,6 @@ async def _do_periodically(interval_seconds, fn, *args, **kwargs):
         ])
 
 
-def start__DEPRECATED():
-    """Start the periodic download."""
-    asyncio.run(_do_periodically(interval_seconds=60 * 5, fn=_cache_posts))
-
-
 async def start():
+    """Start the periodic download."""
     await _do_periodically(interval_seconds=60 * 5, fn=_cache_posts)

@@ -6,7 +6,13 @@ import Post from './Post';
  * typedef for Posts props
  */
 interface IPostsProps {
-    posts: Array<{ id: string, title: string, link: string }>;
+    posts: Array<{
+        id: string,
+        postId: string,
+        title: string,
+        imageUrl: string,
+        postCreatedAt: Date
+    }>;
     onCollectPost?: ((postId: string) => void);
     onTrashPost?: ((postId: string) => void);
 }

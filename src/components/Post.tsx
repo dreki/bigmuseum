@@ -1,6 +1,6 @@
 import * as React from 'react';
 import ContentLoader from 'react-content-loader';
-import {CSSTransition} from 'react-transition-group';
+import { CSSTransition } from 'react-transition-group';
 import PreloadImage from './PreloadImage';
 
 // import ReactPlaceholder from 'react-placeholder';
@@ -10,9 +10,11 @@ import PreloadImage from './PreloadImage';
  */
 interface IPostProps {
     id: string;
+    postId: string;
     title: string;
-    link: string;
-    // key: number;
+    imageUrl: string,
+    postCreatedAt: Date
+
     onCollectPost?: ((postId: string) => void),
     onTrashPost?: ((postId: string) => void),
 }
@@ -52,7 +54,7 @@ function Image(props: IImageProps) {
 
     return <div className={"border border-moody-blue-500 rounded border-b-0 rounded-b-none pb-1.5"}>
         {!props.imageLoaded && props.renderImageContentLoader}
-        <PreloadImage src={props.src} onImageLoaded={props.onImageLoaded}/>
+        <PreloadImage src={props.src} onImageLoaded={props.onImageLoaded} />
         <h3 className={"text-l font-work-sans italic p-1 pr-2 pl-2"}>{props.title}</h3>
     </div>;
 }
@@ -110,7 +112,7 @@ class Post extends React.Component<IPostProps, IPostState> {
      */
     public componentWillUnmount() {
         // Note that we're unloading.
-        this.setState({unloading: true});
+        this.setState({ unloading: true });
     }
 
     /**
@@ -119,7 +121,7 @@ class Post extends React.Component<IPostProps, IPostState> {
      * @returns {void}
      */
     onImageLoaded = (e: React.SyntheticEvent): void => {
-        this.setState({imageLoaded: true})
+        this.setState({ imageLoaded: true })
     }
 
     /**
@@ -157,11 +159,11 @@ class Post extends React.Component<IPostProps, IPostState> {
             <CSSTransition in={!this.state.unloading} timeout={500} classNames={'post-animation'}>
                 <div className={'bi-avoid shadow-sm rounded'}>
                     <Image imageLoaded={this.state.imageLoaded}
-                           renderImageContentLoader={this.renderImageContentLoader()} src={this.props.link}
-                           onImageLoaded={this.onImageLoaded.bind(this)} title={this.props.title}/>
+                        renderImageContentLoader={this.renderImageContentLoader()} src={this.props.imageUrl}
+                        onImageLoaded={this.onImageLoaded.bind(this)} title={this.props.title} />
                     <div className={'flex items-center justify-center mb-4'}>
-                        <CollectButton onClick={this.onCollectPost}/>
-                        <TrashButton onClick={this.onTrashPost.bind(this)}/>
+                        <CollectButton onClick={this.onCollectPost} />
+                        <TrashButton onClick={this.onTrashPost.bind(this)} />
                     </div>
                 </div>
             </CSSTransition>
@@ -171,7 +173,7 @@ class Post extends React.Component<IPostProps, IPostState> {
     private renderImageContentLoader(): React.ReactNode {
         return (
             <ContentLoader viewBox="0 0 450 400">
-                <rect x="0" y="0" rx="0" ry="0" width="450" height="400"/>
+                <rect x="0" y="0" rx="0" ry="0" width="450" height="400" />
             </ContentLoader>
         );
     }

@@ -9,7 +9,13 @@ interface IAppProps {
 }
 
 interface IAppState {
-    posts: Array<{ id: string, title: string, link: string }>
+    posts: Array<{
+        id: string,
+        postId: string,
+        title: string,
+        imageUrl: string,
+        postCreatedAt: Date
+    }>
 }
 
 class App extends React.Component<IAppProps, IAppState> {
@@ -25,7 +31,7 @@ class App extends React.Component<IAppProps, IAppState> {
 
         // const posts: Array<{ id: string, title: string, link: string }> = (await response.json()).items;
         const posts: Array<{ id: string, title: string, link: string }> = response.data.items;
-        this.setState({posts: posts});
+        this.setState({ posts: posts });
     }
 
     onCollectPost = async (postId: string) => {
@@ -33,7 +39,7 @@ class App extends React.Component<IAppProps, IAppState> {
         // Add post to collection
         const response = await axios.post(
             '/api/collection/items',
-            {postId: postId}
+            { postId: postId }
         );
     }
 
@@ -45,17 +51,17 @@ class App extends React.Component<IAppProps, IAppState> {
         const response = await axios.delete(`/api/posts/${postId}`);
         // Remove post from state.
         const posts = this.state.posts.filter(post => post.id !== postId);
-        this.setState({posts});
+        this.setState({ posts });
     }
 
     render() {
-        const {name} = this.props;
+        const { name } = this.props;
         return (
             <>
                 <h2 className={'text-2xl mt-5 mb-4'}>New Arrivals</h2>
                 <Posts posts={this.state.posts}
-                       onCollectPost={this.onCollectPost}
-                       onTrashPost={this.onTrashPost}/>
+                    onCollectPost={this.onCollectPost}
+                    onTrashPost={this.onTrashPost} />
             </>
         );
     }
