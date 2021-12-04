@@ -8,6 +8,7 @@ from models.session import RedditCredentials, Session
 from models.user import User
 from tornado.web import HTTPError
 from utils.log import logger
+from settings import settings
 
 from handlers.base import BaseHandler
 
@@ -33,11 +34,20 @@ class FinishLoginHandler(BaseHandler):
         session: Session = await self.get_session(key=self.get_argument('state'))
         # Get access token, so we can access the Reddit API.
         code: str = self.get_argument('code')
+
+        # Get Reddit API credentials, erroring if they're missing.
+        reddit_client_id: str = settings.get('reddit_client_id', '')
+        reddit_secret: str = settings.get('reddit_secret', '')
+        if not reddit_client_id or not reddit_secret:
+            raise HTTPError(500, 'Reddit client ID or secret not set.')
+
+        # Get credentials to use with the Reddit API.
         async with httpx.AsyncClient() as http:
             response: httpx.Response = \
                 await http.post('https://www.reddit.com/api/v1/access_token',
-                                auth=(self.application.settings.get('reddit_client_id'),
-                                      self.application.settings.get('reddit_secret')),
+                                # auth=(self.application.settings.get('reddit_client_id'),
+                                #       self.application.settings.get('reddit_secret')),
+                                auth=(reddit_client_id, reddit_secret),
                                 data={'grant_type': 'authorization_code',
                                       'code': code,
                                       'redirect_uri': 'http://localhost:8888/login/complete'})
