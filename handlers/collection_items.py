@@ -15,6 +15,8 @@ class CollectionItemsHandler(BaseHandler):
         session: Session = await self.get_session()
         logger.debug(f'> session:')
         logger.debug(session)
+        logger.debug('> a dict:')
+        logger.debug({'first': 1, 'second': 2})
         reddit: Reddit = await self.make_reddit_client()
         # logger.debug(dir(reddit.user))
         # logger.debug(dir(await reddit.user.me()))

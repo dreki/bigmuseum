@@ -3,22 +3,22 @@ import asyncio
 from asyncio.events import AbstractEventLoop
 from concurrent.futures import Executor, ThreadPoolExecutor
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 # from praw.models.helpers import SubredditHelper
 from asyncpraw import Reddit
 from asyncpraw.models.helpers import SubredditHelper
-from asyncpraw.reddit import Submission, Subreddit
+from asyncpraw.reddit import Redditor, Submission, Subreddit
 from db import get_engine
 from models.post import Post
 from models.session import Session
 from odmantic.engine import AIOEngine
 from settings import settings
+from tornado.web import HTTPError
 from utils.log import logger
 from utils.view_models.post import Post as PostViewModel
 
 from handlers.base import BaseHandler
-
 
 # class PostsHandler(BaseHandler):
 #     """Handles requests for posts from Reddit."""
@@ -37,6 +37,18 @@ class NewPostsHandler(BaseHandler):
 
     async def get(self):
         """Handle GET request."""
+
+        # Get information about the current Reddit user.
+        reddit: Optional[Reddit] = await self.make_reddit_client()
+        if not reddit:
+            raise HTTPError(401, 'Reddit unauthorized')
+        # logger.debug('> dir(reddit.user):')
+        # logger.debug(dir(reddit.user.me()))
+        current_user: Optional[Redditor] = await reddit.user.me()
+        if not current_user:
+            raise HTTPError(401, 'Expected current user to be found at reddit.user.me().')
+        logger.debug(current_user)
+
         # Load `Post`s from the database
         db: AIOEngine = await get_engine()
         posts: List[Post] = await db.find(Post)

@@ -45,8 +45,6 @@ class FinishLoginHandler(BaseHandler):
         async with httpx.AsyncClient() as http:
             response: httpx.Response = \
                 await http.post('https://www.reddit.com/api/v1/access_token',
-                                # auth=(self.application.settings.get('reddit_client_id'),
-                                #       self.application.settings.get('reddit_secret')),
                                 auth=(reddit_client_id, reddit_secret),
                                 data={'grant_type': 'authorization_code',
                                       'code': code,
@@ -55,24 +53,20 @@ class FinishLoginHandler(BaseHandler):
             session.reddit_credentials = credentials
             await engine.save(session)
 
-            # Get Reddit user's ID
-            reddit: Reddit = await self.make_reddit_client()
+            # # Get Reddit user's ID
+            # reddit: Reddit = await self.make_reddit_client()
 
-            # reddit_user: User = reddit.user
-            # # user: str = await reddit.get_me()
-            # logger.debug(f'> user id {reddit_user}')
-            # # logger.debug(dir(reddit_user))
-            # logger.debug(vars(reddit_user))
-            logger.debug(await reddit.user.me())
-            current_redditor: Optional[Redditor] = await reddit.user.me()
-            if not current_redditor:
-                raise HTTPError(status_code=500, reason='Failed to get Redditor information.')
-            reddit_username: str = current_redditor.name
-            # Find a User if it exists.
-            user: Optional[User] = await engine.find_one(User, User.username == reddit_username)
-            if not user:
-                user = User(username=reddit_username)
-            await engine.save(user)
+            # logger.debug(await reddit.user.me())
+            # current_redditor: Optional[Redditor] = await reddit.user.me()
+            # if not current_redditor:
+            #     raise HTTPError(status_code=500, reason='Failed to get Redditor information.')
+            # reddit_username: str = current_redditor.name
+            # # Find a User if it exists.
+            # user: Optional[User] = await engine.find_one(User, User.username == reddit_username)
+            # if not user:
+            #     user = User(username=reddit_username)
+            # await engine.save(user)
+
             # if user:
             #     user.reddit_credentials = credentials
             # else:
