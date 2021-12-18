@@ -50,9 +50,13 @@ class BaseHandler(tornado.web.RequestHandler):
     async def prepare(self) -> Optional[Awaitable[None]]:
         """Perform common tasks for all requests."""
         # Print out cookie
-        if not self.get_secure_cookie('session'):
-            self.set_secure_cookie('session', str(uuid4()))
-        self._session = self.get_secure_cookie('session').decode('utf-8')
+        session_bytes: Optional[bytes] = self.get_secure_cookie('session')
+        if session_bytes:
+            self._session = session_bytes.decode('utf-8')
+        if not session_bytes:
+            session: str = str(uuid4())
+            self.set_secure_cookie('session', session)
+            self._session = session
 
         # Set current Reddit user
         await self._set_current_user()
