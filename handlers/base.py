@@ -1,22 +1,21 @@
 """Holds shared `RequestHandler` functionality."""
 from __future__ import annotations
+
 import datetime
 import json
 from typing import Any, Awaitable, Dict, Optional, Type
 from uuid import uuid4
 
 import humps
-from models.user import User
 import tornado.web
-from asyncpraw.reddit import Reddit
-from tornado import httputil
-
-from db import AIOEngine, get_engine
-from models.session import Session
-from utils.log import logger
-from utils.reddit import get_reddit
 from asyncpraw.models import Redditor
 from asyncpraw.reddit import Reddit
+from db import AIOEngine, get_engine
+from models.session import Session
+from models.user import User
+from tornado import httputil
+from utils.log import logger
+from utils.reddit import get_reddit
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -46,6 +45,16 @@ class BaseHandler(tornado.web.RequestHandler):
             user = User(username=reddit_username)
             await engine.save(user)
         self.current_user = user
+
+    @property
+    def current_user(self) -> User:
+        """Get the current user."""
+        return super().current_user
+
+    @current_user.setter
+    def current_user(self, user: User) -> None:
+        """Set the current user."""
+        super(BaseHandler, type(self)).current_user.fset(self, user)
 
     async def prepare(self) -> Optional[Awaitable[None]]:
         """Perform common tasks for all requests."""

@@ -6,3 +6,4 @@ asyncpraw==7.5.0
 pyhumps==3.0.2
 pymongo-migrate==0.11.0
 rich==10.15.2
+async-cache==1.1.1
