@@ -1,4 +1,5 @@
-FROM python:3.9-alpine3.14
+FROM python:3.10-alpine3.15
+# FROM python:3.9-alpine3.14
 
 # FROM node:14-alpine
 # ENV NODE_ENV=production
@@ -36,7 +37,6 @@ RUN set -x \
   && echo "PS1=\"\w # \"" > /root/.bashrc \
   && echo ". ${VIRTUAL_ENV}/bin/activate" >> /root/.bashrc \
   && chmod u+rx /root/.bashrc
-
 
 WORKDIR /app
 

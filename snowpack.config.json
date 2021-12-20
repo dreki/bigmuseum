@@ -1,0 +1,14 @@
+{
+    "mount": {
+        "dist": "/",
+        "src": "/"
+    },
+    "buildOptions": {
+        "out": "dist"
+    },
+    "plugins": [
+        [
+            "@snowpack/plugin-postcss"
+        ]
+    ]
+}

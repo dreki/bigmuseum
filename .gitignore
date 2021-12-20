@@ -22,3 +22,5 @@ __pycache__
 ehthumbs.db
 Thumbs.db
 *.icloud
+build/_snowpack
+build

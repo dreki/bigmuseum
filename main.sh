@@ -11,7 +11,11 @@ yarn run clean
 #   yarn run clean
 # fi
 # npm run-script start
-yarn run start &
+
+mkdir /app/dist
+
+# yarn run start &
+yarn run build &
 
 python3 /app/main.py &
 
