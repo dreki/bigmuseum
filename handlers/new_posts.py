@@ -45,13 +45,16 @@ class NewPostsHandler(BaseHandler):
         # logger.debug('> dir(reddit.user):')
         # logger.debug(dir(reddit.user.me()))
         current_user: Optional[Redditor] = await reddit.user.me()
+        await reddit.close()
         if not current_user:
             raise HTTPError(401, 'Expected current user to be found at reddit.user.me().')
         logger.debug(current_user)
 
         # Load `Post`s from the database
         db: AIOEngine = await get_engine()
+        logger.debug(f'> fetching posts for {current_user.name}')
         posts: List[Post] = await db.find(Post)
+        logger.debug('> returning posts')
         await self.json({'items': [p.dict() for p in posts]})
 
     async def get__DEPRECATED(self):
@@ -60,6 +63,8 @@ class NewPostsHandler(BaseHandler):
         #
         # TODO: Get Posts from database instead of Reddit
         #
+
+        logger.warn('> get__DEPRECATED')
 
         session: Session = await self.get_session()
 

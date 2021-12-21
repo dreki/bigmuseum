@@ -57,5 +57,6 @@ class CollectionItemsHandler(BaseHandler):
         logger.debug(f'> curation:')
         logger.debug(curation)
         # await self.finish('')
+        await reddit.close()
         await db.save(curation)
         await self.json({'success': True})

@@ -29,12 +29,13 @@ class BaseHandler(tornado.web.RequestHandler):
         self._session: Optional[str] = None
 
     async def _set_current_user(self) -> None:
-        """If a user is logged in, set `self.current_user`, if there is a logged in user."""
+        """If a user is logged in, set `self.current_user`."""
         reddit: Optional[Reddit] = await self.make_reddit_client()
         if not reddit:
             return
         logger.debug(await reddit.user.me())
         current_redditor: Optional[Redditor] = await reddit.user.me()
+        await reddit.close()
         if not current_redditor:
             raise tornado.web.HTTPError(status_code=500, reason='Failed to get Redditor information.')
         reddit_username: str = current_redditor.name
@@ -80,7 +81,7 @@ class BaseHandler(tornado.web.RequestHandler):
                                                  Session.key == key)
         # Create `Session` record if it's missing.
         # logger.debug(f'> session: {session}')
-        logger.debug(f'> session:')
+        logger.debug(f'> get_session, session:')
         logger.debug(session)
         logger.debug('> a dict:')
         logger.debug({'first': 1, 'second': 2})
