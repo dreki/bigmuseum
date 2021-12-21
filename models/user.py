@@ -25,4 +25,6 @@ class User(Model):
     @validator('hidden_posts')
     def ensure_unique_hidden_posts(cls, v: List[ObjectId]) -> List[ObjectId]:
         """Ensure unique hidden posts."""
+        if not v:
+            v = []
         return list(set(v))
