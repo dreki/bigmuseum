@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import Posts from './components/Posts';
 import Test from './components/Test';
 import axios from 'axios';
@@ -28,7 +28,15 @@ class App extends React.Component<IAppProps, IAppState> {
         console.log(response);
 
         // const posts: Array<{ id: string, title: string, link: string }> = (await response.json()).items;
-        const posts: Array<{ id: string, title: string, link: string }> = response.data.items;
+        const posts: Array<{
+            id: string,
+            title: string,
+            // link: string,
+            imageUrl: string,
+
+            postId: string,
+            postCreatedAt: Date
+        }> = response.data.items;
         this.setState({ posts: posts });
     }
 
