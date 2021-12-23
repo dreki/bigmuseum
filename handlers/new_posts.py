@@ -58,11 +58,6 @@ class NewPostsHandler(BaseHandler):
                    as_='hidden_filter'),
             unwind('$hidden_filter'),
             match({'hidden_filter.should_hide': False}),
-            # lookup(from_=+User,
-            #        local_field=+Post.id,  # type: ignore
-            #        foreign_field=+User.hidden_posts,  # type: ignore
-            #        as_='hidden'),
-            # match({f'hidden.{+User.hidden_posts}': exists(False)}),  # type: ignore
             project(hidden=False)
         ]
         logger.debug('> aggregation:')
