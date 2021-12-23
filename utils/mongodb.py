@@ -130,6 +130,8 @@ literal = MongoExpression('$literal')
 
 project = MongoExpression('$project')
 
+replace_with = MongoExpression('$replaceWith')
+
 TModel = TypeVar('TModel', bound=Model)
 
 

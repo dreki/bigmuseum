@@ -17,7 +17,7 @@ from odmantic.engine import AIOEngine
 from settings import settings
 from tornado.web import HTTPError
 from utils.log import logger
-from utils.mongodb import aggregate, lookup, match, exists, project
+from utils.mongodb import aggregate, lookup, match, exists, project, replace_with, and_, eq, in_, unwind
 from utils.view_models.post import Post as PostViewModel
 
 from handlers.base import BaseHandler
@@ -43,10 +43,26 @@ class NewPostsHandler(BaseHandler):
         # posts: List[Post] = await db.find(Post, Post.user == current_user.name)
         aggregation: List[dict] = [
             lookup(from_=+User,
-                   local_field=+Post.id,  # type: ignore
-                   foreign_field=+User.hidden_posts,  # type: ignore
-                   as_='hidden'),
-            match({f'hidden.{+User.hidden_posts}': exists(False)}),  # type: ignore
+                   let={
+                       f'{+User}_{+User.id}': self.current_user.id,  # type: ignore
+                       f'{+Post}_{+Post.id}': ++Post.id,  # type: ignore
+                   },
+                   pipeline=[
+                       replace_with(
+                           should_hide=and_([
+                               eq([++User.id, f'$${+User}_{+User.id}']),  # type: ignore
+                               in_([f'$${+Post}_{+Post.id}', ++User.hidden_posts]),  # type: ignore
+                            ])
+                       )
+                   ],
+                   as_='hidden_filter'),
+            unwind('$hidden_filter'),
+            match({'hidden_filter.should_hide': False}),
+            # lookup(from_=+User,
+            #        local_field=+Post.id,  # type: ignore
+            #        foreign_field=+User.hidden_posts,  # type: ignore
+            #        as_='hidden'),
+            # match({f'hidden.{+User.hidden_posts}': exists(False)}),  # type: ignore
             project(hidden=False)
         ]
         logger.debug('> aggregation:')
