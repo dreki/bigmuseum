@@ -1,11 +1,12 @@
 """Holds utilities for working with MongoDB aggregation pipelines."""
 
 from contextlib import asynccontextmanager
-from typing import Any, Dict, List, Optional, Sequence, Type, Union
+from functools import singledispatch
+from typing import Any, Dict, List, Optional, Sequence, Type, TypeVar, Union
 
 import humps
-from pymongo.command_cursor import CommandCursor
-
+from motor.motor_asyncio import AsyncIOMotorCollection
+from motor.motor_tornado import MotorCommandCursor
 from db import AIOEngine
 from models.model import Model
 
@@ -52,11 +53,12 @@ class MongoExpression:
         self.stage_name = stage_name
         self.convert_kwargs_to_camel = convert_kwargs_to_camel
 
-    def __call__(self, *args: Sequence, **kwargs: Dict) -> Dict:
+    def __call__(self, *args, **kwargs) -> Dict:
         """Return a usable MongoDB expression."""
         if args:
             first_arg: Any = args[0]
-            if issubclass(type(first_arg), dict):  # Support dict subclasses, like `SortExpression`.
+            # Support dict subclasses, like `SortExpression`.
+            if issubclass(type(first_arg), dict):
                 first_arg = dict(first_arg.items())
             output = {self.stage_name: first_arg}
             output.update(kwargs or {})
@@ -112,6 +114,8 @@ in_ = MongoExpression('$in')
 
 nin = MongoExpression('$nin')
 
+exists = MongoExpression('$exists')
+
 set_ = MongoExpression('$set')
 
 set_union = MongoExpression('$setUnion')
@@ -126,32 +130,81 @@ literal = MongoExpression('$literal')
 
 project = MongoExpression('$project')
 
+TModel = TypeVar('TModel', bound=Model)
+
 
 def aggregation_cursor(engine: AIOEngine,
-                       aggregation=Sequence[Dict],
-                       model: Type[Model] = None,
-                       batch_size: int = None) -> CommandCursor:
+                       aggregation: Sequence[Dict],
+                       model: Type[TModel],
+                       batch_size: int = None) -> MotorCommandCursor:
     """Run an aggregation pipeline and return a cursor that can be `async for`-ed."""
+    collection: AsyncIOMotorCollection = engine.get_collection(model)
     if batch_size is not None:
-        return engine.get_collection(model).aggregate(
-            aggregation, batchSize=batch_size)
-    return engine.get_collection(model).aggregate(aggregation)
+        return collection.aggregate(aggregation,
+                                    batchSize=batch_size)
+    return collection.aggregate(aggregation)
+
+
+async def aggregate_as_dicts(engine: AIOEngine,
+                             aggregation: Sequence[Dict],
+                             model: Type[TModel]) -> Sequence[Dict]:
+    """
+    Run an aggregation pipeline and return the results as dictionaries, without
+    casting as a specific `Model`.
+
+    :param engine: The engine to use.
+    :param aggregation: The aggregation pipeline to run.
+    :param model: The model whose collection to run the aggregation against.
+    """
+    cursor: MotorCommandCursor = aggregation_cursor(engine=engine,
+                                                    model=model,
+                                                    aggregation=aggregation)
+    docs: Sequence[Dict] = await cursor.to_list(length=None)
+    return docs
 
 
 async def aggregate(engine: AIOEngine,
                     aggregation: Sequence[Dict],
-                    model: Type[Model] = None,
-                    cast_to: Type[Model] = None) -> Union[Sequence[Dict], Sequence[Model]]:
-    """Run an aggregation pipeline, cast the documents to the appropriate `Model`, and return the results."""
-    if not model and cast_to:
-        model = cast_to
-    if not model:
-        raise ValueError('Must provide `model` or `cast_to`.')
-    cursor: CommandCursor = aggregation_cursor(engine=engine, model=model, aggregation=aggregation)
-    docs: Sequence[Dict] = await cursor.to_list(length=None)
-    if not cast_to:
-        return docs
-    cast: Sequence[cast_to] = [cast_to.parse_doc(d) for d in docs]
+                    model: Type[TModel]) -> Sequence[TModel]:
+    """Run an aggregation pipeline and return the results as `Model` instances.
+
+    :param engine: The engine to use.
+    :param aggregation: The aggregation pipeline to run.
+    :param model: The model whose collection to run the aggregation against.
+    """
+    # cursor: MotorCommandCursor = await aggregation_cursor(engine=engine,
+    #                                                       model=model,
+    #                                                       aggregation=aggregation)
+    # docs: Sequence[Dict] = await cursor.to_list(length=None)
+    # cast: Sequence[TModel] = [model.parse_doc(d) for d in docs]
+    dicts: Sequence[Dict] = await aggregate_as_dicts(engine=engine,
+                                                     aggregation=aggregation,
+                                                     model=model)
+    cast: Sequence[TModel] = [model.parse_doc(d) for d in dicts]
+    return cast
+
+
+async def aggregate_as(engine: AIOEngine,
+                       aggregation: Sequence[Dict],
+                       model: Type[TModel],
+                       cast_to: Type[TModel]) -> Sequence[TModel]:
+    """
+    Run an aggregation pipeline, cast the documents to the appropriate `Model`,
+    and return the results.
+
+    :param engine: The engine to use.
+    :param aggregation: The aggregation pipeline to run.
+    :param model: The model whose collection to run the aggregation against.
+    :param cast_to: The model to cast the documents to.
+    """
+    # cursor: MotorCommandCursor = aggregation_cursor(engine=engine,
+    #                                                 model=model,
+    #                                                 aggregation=aggregation)
+    # docs: Sequence[Dict] = await cursor.to_list(length=None)
+    docs: Sequence[Dict] = await aggregate_as_dicts(engine=engine,
+                                                    aggregation=aggregation,
+                                                    model=model)
+    cast: Sequence[TModel] = [cast_to.parse_doc(d) for d in docs]
     return cast
 
 
