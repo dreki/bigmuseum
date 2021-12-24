@@ -35,8 +35,4 @@ services:
     ports:
       - "6379:6379"
     restart: always
-    # environment:
-    #   REDIS_PASSWORD: "artsmia"
-    # volumes:
-    #   - .:/app
-    #   - /app/node_modules  # Ensure `/app/node_modules` is always empty in the container
+    
