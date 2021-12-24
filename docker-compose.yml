@@ -28,3 +28,15 @@ services:
     volumes:
       - .:/app
       - /app/node_modules  # Ensure `/app/node_modules` is always empty in the container
+  redis:
+    image: redis:6.2-alpine
+    container_name: bigmuseum-redis
+    hostname: bigmuseum-redis
+    ports:
+      - "6379:6379"
+    restart: always
+    # environment:
+    #   REDIS_PASSWORD: "artsmia"
+    # volumes:
+    #   - .:/app
+    #   - /app/node_modules  # Ensure `/app/node_modules` is always empty in the container
