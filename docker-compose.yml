@@ -16,7 +16,8 @@ services:
     env_file:
       - local.env
     environment:
-      DEBUG: "true"
+      - DEBUG=true
+      - REDIS_HOST
     build:
       context: .
       # args:

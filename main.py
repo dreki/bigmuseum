@@ -28,6 +28,11 @@ settings.update({
     'cookie_secret': 'f3be6678-38cb-4141-ba1b-8691e302407d'
 })
 
+# Update `settings` with what's in the environment
+# settings.update(os.environ)
+# # Lower-case all keys in `settings`
+# settings = {k.lower(): v for k, v in settings.items()}
+
 
 class HelloWorldHandler(BaseHandler):
     async def get(self):

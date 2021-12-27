@@ -65,6 +65,8 @@ class NewPostsHandler(BaseHandler):
         posts: Sequence[Post] = await aggregate(engine=db,
                                                 aggregation=aggregation,
                                                 model=Post)
+        logger.debug('> settings:')
+        logger.debug(settings)
         return posts
 
     async def get(self):

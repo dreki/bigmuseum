@@ -24,3 +24,4 @@ Thumbs.db
 *.icloud
 build/_snowpack
 build
+.env
