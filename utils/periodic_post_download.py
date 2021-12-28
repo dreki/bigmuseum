@@ -40,7 +40,8 @@ async def _cache_posts():
     reddit: Reddit = await get_reddit()
     r_museum = await reddit.subreddit('museum')
     logger.info('Caching posts from /r/museum')
-    async for post in r_museum.hot(limit=5):
+    # TODO: Remove `limit` when everything is working?
+    async for post in r_museum.hot(limit=50):
         # Convert created_utc to a datetime.
         post_created_utc: datetime.datetime = datetime.datetime.fromtimestamp(post.created_utc)
         if post_created_utc < last_run.value:

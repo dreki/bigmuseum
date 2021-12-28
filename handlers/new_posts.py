@@ -16,8 +16,10 @@ from models.user import User
 from odmantic.engine import AIOEngine
 from settings import settings
 from tornado.web import HTTPError
+from utils.json import dumps, loads
 from utils.log import logger
-from utils.mongodb import aggregate, lookup, match, exists, project, replace_with, and_, eq, in_, unwind
+from utils.mongodb import (aggregate, and_, eq, exists, in_, lookup, match,
+                           project, replace_with, unwind)
 from utils.view_models.post import Post as PostViewModel
 
 from handlers.base import BaseHandler
@@ -28,7 +30,6 @@ from handlers.base import BaseHandler
 #     def __init__(self, loop: AbstractEventLoop, executor: Executor):
 #         """Initialize the handler."""
 #         super().__init__(loop, executor)
-
 
 class NewPostsHandler(BaseHandler):
     """Returns new Reddit posts, given a person's account."""
@@ -67,6 +68,13 @@ class NewPostsHandler(BaseHandler):
                                                 model=Post)
         logger.debug('> settings:')
         logger.debug(settings)
+        # logger.debug(ujson.dumps([p.dict() for p in posts]))
+        logger.debug(dumps([p.dict() for p in posts]))
+        logger.debug('Decoded:')
+        decoded = loads(dumps([p.dict() for p in posts]))
+        logger.debug(Post.parse_obj(decoded[0]))
+        # posts[0].json
+        # Post.parse_doc
         return posts
 
     async def get(self):
