@@ -16,6 +16,7 @@ from models.user import User
 from tornado import httputil
 from utils.log import logger
 from utils.reddit import get_reddit
+import yappi
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -26,7 +27,7 @@ class BaseHandler(tornado.web.RequestHandler):
                  request: httputil.HTTPServerRequest,
                  **kwargs: Any) -> None:
         super().__init__(application, request, **kwargs)
-        self._session: Optional[str] = None
+        self._session_key: Optional[str] = None
 
     async def _set_current_user(self) -> None:
         """If a user is logged in, set `self.current_user`."""
@@ -37,7 +38,8 @@ class BaseHandler(tornado.web.RequestHandler):
         current_redditor: Optional[Redditor] = await reddit.user.me()
         await reddit.close()
         if not current_redditor:
-            raise tornado.web.HTTPError(status_code=500, reason='Failed to get Redditor information.')
+            raise tornado.web.HTTPError(
+                status_code=500, reason='Failed to get Redditor information.')
         reddit_username: str = current_redditor.name
         # Find a User if it exists.
         engine: AIOEngine = await get_engine()
@@ -57,28 +59,57 @@ class BaseHandler(tornado.web.RequestHandler):
         """Set the current user."""
         super(BaseHandler, type(self)).current_user.fset(self, user)
 
-    async def prepare(self) -> Optional[Awaitable[None]]:
+    async def prepare__DEPRECATED(self) -> Optional[Awaitable[None]]:
         """Perform common tasks for all requests."""
+
+        # yappi.set_clock_type('wall')
+        # with yappi.run():
+
         # Print out cookie
         session_bytes: Optional[bytes] = self.get_secure_cookie('session')
         if session_bytes:
-            self._session = session_bytes.decode('utf-8')
+            self._session_key = session_bytes.decode('utf-8')
         if not session_bytes:
             session: str = str(uuid4())
             self.set_secure_cookie('session', session)
-            self._session = session
+            self._session_key = session
 
         # Set current Reddit user
         await self._set_current_user()
+
+        # outfile = open('./yappi.out', 'w')
+        # yappi.get_func_stats().print_all(out=outfile)
+
         return super().prepare()
+
+    async def prepare(self) -> Optional[Awaitable[None]]:
+        session_bytes: Optional[bytes] = self.get_secure_cookie('session')
+        if session_bytes:
+            self._session_key = session_bytes.decode('utf-8')
+        if not session_bytes:
+            session_key: str = str(uuid4())
+            self.set_secure_cookie('session', session_key)
+            self._session_key = session_key
+
+        # session: Session = await self.get_session()
+        # user: Optional[User] = await self.get_current_user()
+        # if user:
+        #     self.current_user = user
+        # Get the current `User`, based on the session.
+        db: AIOEngine = await get_engine()
+        session: Session = await self.get_session()
+        logger.debug(f'> User.reddit_username == session.reddit_username: {User.reddit_username} == {session.reddit_username}')
+        user: Optional[User] = await db.find_one(User, User.reddit_username == session.reddit_username)
+        if user:
+            self.current_user = user
 
     async def get_session(self, key: Optional[str] = None) -> Session:
         """Get the current user's `Session` record."""
         engine: AIOEngine = await get_engine()
         if not key:
-            key = self._session
-        session: Session = await engine.find_one(Session,
-                                                 Session.key == key)
+            key = self._session_key
+        session: Optional[Session] = await engine.find_one(Session,
+                                                           Session.key == key)
         # Create `Session` record if it's missing.
         # logger.debug(f'> session: {session}')
         logger.debug(f'> get_session, session:')
@@ -86,9 +117,17 @@ class BaseHandler(tornado.web.RequestHandler):
         logger.debug('> a dict:')
         logger.debug({'first': 1, 'second': 2})
         if not session:
-            session: Session = Session(key=key)
+            # session: Session = Session(key=key)
+            session = Session(key=key)
             await engine.save(session)
         return session
+
+    # async def get_current_user(self) -> Optional[User]:
+    #     """Get the current user, based on the session."""
+    #     db: AIOEngine = await get_engine()
+    #     session: Session = await self.get_session()
+    #     user: Optional[User] = await db.find_one(User, User.reddit_username == session.reddit_username)
+    #     return user
 
     def _encode_as_json(obj: Any) -> str:
         if isinstance(obj, datetime.datetime):
@@ -108,11 +147,12 @@ class BaseHandler(tornado.web.RequestHandler):
         j = humps.decamelize(j)
         return j
 
-    async def make_reddit_client(self) -> Optional[Reddit]:
+    async def make_reddit_client(self, refresh_token: Optional[str] = None) -> Optional[Reddit]:
         """Create a `Reddit` client."""
-        session: Session = await self.get_session()
-        if not session or not session.reddit_credentials:
-            return None
-        refresh_token = session.reddit_credentials.refresh_token
+        if not refresh_token:
+            session: Session = await self.get_session()
+            if not session or not session.reddit_credentials:
+                return None
+            refresh_token = session.reddit_credentials.refresh_token
         reddit = await get_reddit(refresh_token)
         return reddit

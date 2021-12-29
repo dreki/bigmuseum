@@ -30,5 +30,6 @@ class Session(Model):
     """A logged-in person's session."""
     key: str
     reddit_credentials: Optional[RedditCredentials]
+    reddit_username: Optional[str]
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)

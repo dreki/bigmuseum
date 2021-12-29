@@ -11,7 +11,7 @@ from pydantic import validator
 class User(Model):
     """User model."""
 
-    username: str
+    reddit_username: str
     hidden_posts: Optional[List[ObjectId]]
 
     # def add_hidden_post(self, post_id: ObjectId) -> None:

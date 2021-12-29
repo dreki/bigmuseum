@@ -49,12 +49,30 @@ class FinishLoginHandler(BaseHandler):
                                 data={'grant_type': 'authorization_code',
                                       'code': code,
                                       'redirect_uri': 'http://localhost:8888/login/complete'})
-            credentials: RedditCredentials = RedditCredentials.parse_obj(response.json())
+            response_json = response.json()
+            logger.debug('> response_json:')
+            logger.debug(response_json)
+            credentials: RedditCredentials = RedditCredentials.parse_obj(
+                response_json)
             session.reddit_credentials = credentials
+
+            # Get Reddit user's name.
+            reddit: Optional[Reddit] = await self.make_reddit_client(refresh_token=credentials.refresh_token)
+            if not reddit:
+                raise HTTPError(status_code=401,
+                                reason='Failed to get Reddit client for current user.')
+            redditor: Optional[Redditor] = await reddit.user.me()
+            if not redditor:
+                raise HTTPError(status_code=401,
+                                reason='Failed to get Reddit user information.')
+            session.reddit_username = redditor.name
             await engine.save(session)
 
-            # # Get Reddit user's ID
-            # reddit: Reddit = await self.make_reddit_client()
+            # Create `User` record, if it doesn't exist.
+            user: Optional[User] = await engine.find_one(User, User.reddit_username == session.reddit_username)
+            if not user:
+                user = User(reddit_username=session.reddit_username)
+            await engine.save(user)
 
             # logger.debug(await reddit.user.me())
             # current_redditor: Optional[Redditor] = await reddit.user.me()

@@ -1,17 +1,13 @@
 """Holds handlers for working with new Reddit posts."""
-import asyncio
-from asyncio.events import AbstractEventLoop
-from concurrent.futures import Executor, ThreadPoolExecutor
-from datetime import datetime
-from typing import List, Optional, Sequence
+# from typing import Dict, List, Optional, Sequence
+from typing import Dict, List, Optional
+from collections.abc import Sequence
 
 # from praw.models.helpers import SubredditHelper
 from asyncpraw import Reddit
-from asyncpraw.models.helpers import SubredditHelper
 from asyncpraw.reddit import Redditor, Submission, Subreddit
 from db import get_engine
 from models.post import Post
-from models.session import Session
 from models.user import User
 from odmantic.engine import AIOEngine
 from settings import settings
@@ -20,6 +16,7 @@ from utils.json import dumps, loads
 from utils.log import logger
 from utils.mongodb import (aggregate, and_, eq, exists, in_, lookup, match,
                            project, replace_with, unwind)
+from utils.redis import get_cache, set_cache
 from utils.view_models.post import Post as PostViewModel
 
 from handlers.base import BaseHandler
@@ -41,6 +38,18 @@ class NewPostsHandler(BaseHandler):
     async def _fetch_posts(self, current_user: Redditor) -> Sequence[Post]:
         """Fetch `Post`s from the database."""
         db: AIOEngine = await get_engine()
+        # If a cache exists, use it.
+        logger.debug('> current user:')
+        logger.debug(self.current_user)
+        cache_key: str = f'{self.current_user.id}_new_posts'
+        # cached_posts: Optional[Sequence[Dict]] = await get_cache(cache_key)
+        cached_posts: Optional[Sequence[Dict]] = await get_cache(Sequence[Dict], cache_key)
+        if cached_posts:
+            # logger.debug('> cached_posts:')
+            # logger.debug(cached_posts)
+            logger.debug('> returning cached posts')
+            return [Post(**p) for p in cached_posts]
+
         # posts: List[Post] = await db.find(Post, Post.user == current_user.name)
         aggregation: List[dict] = [
             lookup(from_=+User,
@@ -73,12 +82,24 @@ class NewPostsHandler(BaseHandler):
         logger.debug('Decoded:')
         decoded = loads(dumps([p.dict() for p in posts]))
         logger.debug(Post.parse_obj(decoded[0]))
+        # redis: Redis = await get_connection()
+        # await redis.set(f'{self.current_user.id}_new_posts', dumps(decoded))
+        logger.debug(f'> cache_key: {cache_key}')
+        await set_cache(cache_key, [p.dict() for p in posts])
+
         # posts[0].json
         # Post.parse_doc
         return posts
 
     async def get(self):
         """Handle GET request."""
+
+        # TODO: Abstract this, and remove it from _get_posts
+        cache_key: str = f'{self.current_user.id}_new_posts'
+        cached_posts: Optional[Sequence[Dict]] = await get_cache(Sequence[Dict], cache_key)
+        if cached_posts:
+            await self.json({'items': cached_posts})
+            return
 
         # Get information about the current Reddit user.
         reddit: Optional[Reddit] = await self.make_reddit_client()
