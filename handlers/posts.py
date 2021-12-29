@@ -1,7 +1,8 @@
 """Holds handlers related to Reddit posts."""
 from typing import Optional
+
 from asyncpraw.reddit import Reddit, Submission
-from db import get_engine, AIOEngine
+from db import AIOEngine, get_engine
 from models.post import Post
 from odmantic.bson import ObjectId
 from tornado.web import HTTPError
@@ -14,23 +15,24 @@ from handlers.base import BaseHandler
 class PostsHandler(BaseHandler):
     """Affords interactions with posts from Reddit."""
 
+    async def _hide_on_reddit(self, post_id: str):
+        """Hide a post on Reddit. (Note: This function is untested.)"""
+        # Get reddit instance
+        reddit: Optional[Reddit] = await self.make_reddit_client()
+        if not reddit:
+            raise HTTPError(status_code=401,
+                            reason='Failed to get Reddit client for current user.')
+        # Get submission
+        submission: Submission = await reddit.submission(id=post_id)
+        # Hide submission
+        await submission.hide()
+
     async def delete(self, post_id):
         """Delete a post."""
         logger.debug(f'> hide {post_id}')
 
         # TODO: Uncomment if we want to hide on Reddit.
-        # Remember to look up Reddit post ID from `Post`.
-        #
-        # Get reddit instance
-        # reddit: Optional[Reddit] = await self.make_reddit_client()
-        # if not reddit:
-        #     raise HTTPError(status_code=401,
-        #                     reason='Failed to get Reddit client for current user.')
-        # Get submission
-        # submission: Submission = await reddit.submission(id=post_id)
-        # logger.debug(f'> submission: {submission}')
-        # # Hide submission
-        # await submission.hide()
+        # await self._hide_on_reddit(post_id=post_id)
 
         # Record hide in `User` document.
         engine: AIOEngine = await get_engine()

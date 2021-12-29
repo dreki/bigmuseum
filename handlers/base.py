@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import datetime
 import json
-from typing import Any, Awaitable, Dict, Optional, Type
+from typing import Any, Awaitable, Dict, Iterable, Optional, Type, Union
 from uuid import uuid4
 
 import humps
@@ -28,7 +28,17 @@ class BaseHandler(tornado.web.RequestHandler):
         super().__init__(application, request, **kwargs)
         self._session_key: Optional[str] = None
 
-    async def _set_current_user(self) -> None:
+    @property
+    def current_user(self) -> User:
+        """Get the current user."""
+        return super().current_user
+
+    @current_user.setter
+    def current_user(self, user: User) -> None:
+        """Set the current user."""
+        super(BaseHandler, type(self)).current_user.fset(self, user)
+
+    async def _set_current_user__DEPRECATED(self) -> None:
         """If a user is logged in, set `self.current_user`."""
         reddit: Optional[Reddit] = await self.make_reddit_client()
         if not reddit:
@@ -53,33 +63,6 @@ class BaseHandler(tornado.web.RequestHandler):
         cache_key: str = f'{self.current_user.id}_new_posts'
         return cache_key
 
-    @property
-    def current_user(self) -> User:
-        """Get the current user."""
-        return super().current_user
-
-    @current_user.setter
-    def current_user(self, user: User) -> None:
-        """Set the current user."""
-        super(BaseHandler, type(self)).current_user.fset(self, user)
-
-    async def prepare__DEPRECATED(self) -> Optional[Awaitable[None]]:
-        """Perform common tasks for all requests."""
-
-        # Print out cookie
-        session_bytes: Optional[bytes] = self.get_secure_cookie('session')
-        if session_bytes:
-            self._session_key = session_bytes.decode('utf-8')
-        if not session_bytes:
-            session: str = str(uuid4())
-            self.set_secure_cookie('session', session)
-            self._session_key = session
-
-        # Set current Reddit user
-        await self._set_current_user()
-
-        return super().prepare()
-
     async def prepare(self) -> Optional[Awaitable[None]]:
         """Perform common tasks for all requests."""
 
@@ -91,15 +74,9 @@ class BaseHandler(tornado.web.RequestHandler):
             self.set_secure_cookie('session', session_key)
             self._session_key = session_key
 
-        # session: Session = await self.get_session()
-        # user: Optional[User] = await self.get_current_user()
-        # if user:
-        #     self.current_user = user
         # Get the current `User`, based on the session.
         db: AIOEngine = await get_engine()
         session: Session = await self.get_session()
-        logger.debug(
-            f'> User.reddit_username == session.reddit_username: {User.reddit_username} == {session.reddit_username}')
         user: Optional[User] = await db.find_one(User, User.reddit_username == session.reddit_username)
         if user:
             self.current_user = user
@@ -118,34 +95,28 @@ class BaseHandler(tornado.web.RequestHandler):
         logger.debug('> a dict:')
         logger.debug({'first': 1, 'second': 2})
         if not session:
-            # session: Session = Session(key=key)
             session = Session(key=key)
             await engine.save(session)
         return session
 
-    # async def get_current_user(self) -> Optional[User]:
-    #     """Get the current user, based on the session."""
-    #     db: AIOEngine = await get_engine()
-    #     session: Session = await self.get_session()
-    #     user: Optional[User] = await db.find_one(User, User.reddit_username == session.reddit_username)
-    #     return user
-
-    def _encode_as_json(obj: Any) -> str:
-        if isinstance(obj, datetime.datetime):
-            obj: datetime.datetime
-            return obj.isoformat()
-        raise TypeError(f'Unexpected type {type(obj)}.')
-
     async def json(self, payload: Dict) -> None:
         """Send a JSON response."""
         self.set_header('Content-Type', 'application/json')
-        payload = humps.camelize(payload)
-        return self.finish(json.dumps(payload, default=str))
+        camelized: Union[str, Iterable] = humps.camelize(payload)
+        if not isinstance(camelized, Dict):
+            raise TypeError(
+                f'When outputting JSON, expected a dict, got {type(camelized)}.')
+        payload = camelized
+        await self.finish(json.dumps(payload, default=str))
 
     async def get_json_body(self) -> Dict:
         """Get the JSON body of the request."""
         j: Dict = json.loads(self.request.body.decode('utf-8'))
-        j = humps.decamelize(j)
+        camelized: Union[str, Iterable] = humps.decamelize(j)
+        if not isinstance(camelized, Dict):
+            raise TypeError(
+                f'When inputting JSON, expected a dict, got {type(camelized)}.')
+        j = camelized
         return j
 
     async def make_reddit_client(self, refresh_token: Optional[str] = None) -> Optional[Reddit]:
