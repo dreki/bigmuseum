@@ -82,8 +82,12 @@ class NewPostsHandler(BaseHandler):
                                                 model=Post)
         return posts
 
-    async def get(self):
+    async def get(self, filter: str):
         """Handle GET request."""
+
+        # if not filter or filter not in ['new', 'hot', 'top']:
+        if not filter or filter not in ['new']:
+            raise HTTPError(status_code=400, reason='Invalid filter.')
 
         # TODO: Abstract this, and remove it from _get_posts
         cached_posts = await self._get_cached_posts()
