@@ -6,6 +6,7 @@ from models.post import Post
 from odmantic.bson import ObjectId
 from tornado.web import HTTPError
 from utils.log import logger
+from utils.redis import delete_cache
 
 from handlers.base import BaseHandler
 
@@ -45,6 +46,9 @@ class PostsHandler(BaseHandler):
             self.current_user.hidden_posts = []
         self.current_user.hidden_posts.append(post.id)
         await engine.save(self.current_user)
+
+        # Delete any existing posts cache for this User.
+        await delete_cache(self._make_cached_posts_key())
 
         # await self.current_user.hidden_posts.append(ObjectId(post_id))
 

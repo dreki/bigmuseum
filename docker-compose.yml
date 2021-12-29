@@ -18,6 +18,7 @@ services:
     environment:
       - DEBUG=true
       - REDIS_HOST
+      - NEW_POSTS_CACHE_EXPIRATION_SECONDS
     build:
       context: .
       # args:

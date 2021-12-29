@@ -16,7 +16,6 @@ from models.user import User
 from tornado import httputil
 from utils.log import logger
 from utils.reddit import get_reddit
-import yappi
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -49,6 +48,11 @@ class BaseHandler(tornado.web.RequestHandler):
             await engine.save(user)
         self.current_user = user
 
+    def _make_cached_posts_key(self) -> str:
+        """Make a User-based key for caching posts."""
+        cache_key: str = f'{self.current_user.id}_new_posts'
+        return cache_key
+
     @property
     def current_user(self) -> User:
         """Get the current user."""
@@ -62,9 +66,6 @@ class BaseHandler(tornado.web.RequestHandler):
     async def prepare__DEPRECATED(self) -> Optional[Awaitable[None]]:
         """Perform common tasks for all requests."""
 
-        # yappi.set_clock_type('wall')
-        # with yappi.run():
-
         # Print out cookie
         session_bytes: Optional[bytes] = self.get_secure_cookie('session')
         if session_bytes:
@@ -77,12 +78,11 @@ class BaseHandler(tornado.web.RequestHandler):
         # Set current Reddit user
         await self._set_current_user()
 
-        # outfile = open('./yappi.out', 'w')
-        # yappi.get_func_stats().print_all(out=outfile)
-
         return super().prepare()
 
     async def prepare(self) -> Optional[Awaitable[None]]:
+        """Perform common tasks for all requests."""
+
         session_bytes: Optional[bytes] = self.get_secure_cookie('session')
         if session_bytes:
             self._session_key = session_bytes.decode('utf-8')
@@ -98,7 +98,8 @@ class BaseHandler(tornado.web.RequestHandler):
         # Get the current `User`, based on the session.
         db: AIOEngine = await get_engine()
         session: Session = await self.get_session()
-        logger.debug(f'> User.reddit_username == session.reddit_username: {User.reddit_username} == {session.reddit_username}')
+        logger.debug(
+            f'> User.reddit_username == session.reddit_username: {User.reddit_username} == {session.reddit_username}')
         user: Optional[User] = await db.find_one(User, User.reddit_username == session.reddit_username)
         if user:
             self.current_user = user
