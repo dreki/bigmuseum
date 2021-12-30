@@ -24,7 +24,7 @@ class App extends React.Component<IAppProps, IAppState> {
 
     public async componentDidMount(): Promise<void> {
         // Load and set posts.
-        const response = await axios.get('/api/posts/new');
+        const response = await axios.get('/api/posts?filter=new');
         console.log(response);
 
         // const posts: Array<{ id: string, title: string, link: string }> = (await response.json()).items;

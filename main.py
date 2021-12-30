@@ -46,7 +46,8 @@ def make_app() -> tornado.web.Application:
             (r'/', HelloWorldHandler),
             (r'/login', LoginHandler),
             (r'/login/complete', FinishLoginHandler),
-            (r'/api/posts/(?P<filter>new)', NewPostsHandler),
+            # (r'/api/posts/(?P<filter>new)', NewPostsHandler),
+            (r'/api/posts', PostsHandler),
             (r'/api/posts/(?P<post_id>[^/]+)', PostsHandler),
             (r'/api/collection/items', CollectionItemsHandler),
             # Alias for main app file.
