@@ -9,8 +9,8 @@ from odmantic.bson import ObjectId
 from settings import settings
 from tornado.web import HTTPError
 from utils.log import logger
-from utils.mongodb import (aggregate, and_, lookup, match, project,
-                           replace_with, unwind, eq, in_)
+from utils.mongodb import (aggregate, and_, eq, in_, lookup, match, project,
+                           replace_with, sort, unwind)
 from utils.redis import delete_cache, get_cache, set_cache
 
 from handlers.base import BaseHandler
@@ -69,7 +69,8 @@ class PostsHandler(BaseHandler):
                 as_='hidden_filter'),
             unwind('$hidden_filter'),
             match({'hidden_filter.should_hide': False}),
-            project(hidden=False)
+            project(hidden=False),
+            sort(Post.post_created_at.desc())  # type: ignore
         ]
         posts: Sequence[Post] = await aggregate(engine=db,
                                                 aggregation=aggregation,

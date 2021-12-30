@@ -10,7 +10,6 @@ import utils.periodic_post_download
 from handlers.base import BaseHandler
 from handlers.collection_items import CollectionItemsHandler
 from handlers.login import FinishLoginHandler, LoginHandler
-from handlers.new_posts import NewPostsHandler
 from handlers.posts import PostsHandler
 from settings import settings
 
