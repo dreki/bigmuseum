@@ -17,12 +17,12 @@ def paginate(aggregation: Sequence[Dict], skip: int, limit: int) -> Sequence[Dic
     The output of the aggregation will provide `count` and `items`.
     """
     # Add total count.
-    aggregation = aggregation + [{'$group': {'_id': 'items',
-                                             'total': {'$sum': 1},
-                                             'items': {'$push': '$$ROOT'}}}]
+    aggregation = list(aggregation) + [{'$group': {'_id': 'items',
+                                                   'total': {'$sum': 1},
+                                                   'items': {'$push': '$$ROOT'}}}]
     # Paginate.
-    aggregation = aggregation + [{'$project': {'total': True,
-                                               'items': {'$slice': ['$items', skip, limit]}}}]
+    aggregation = list(aggregation) + [{'$project': {'total': True,
+                                                     'items': {'$slice': ['$items', skip, limit]}}}]
     return aggregation
 
 
