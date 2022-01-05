@@ -1,12 +1,14 @@
 import React from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import App from './App';
+import Collection from './Collection';
+import NewPosts from './NewPosts';
 
 function Router() {
     return (
         <BrowserRouter basename='/app'>
             <Routes>
-                <Route path="/" element={<App name={'Little Janey'} />} />
+                <Route path="/" element={<NewPosts name={'Little Janey'} />} />
+                <Route path="/collection" element={<Collection />} />
             </Routes>
         </BrowserRouter>
     );

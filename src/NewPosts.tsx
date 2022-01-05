@@ -1,12 +1,13 @@
 import axios from 'axios';
-import React from "react";
+import React from 'react';
+import { Link } from 'react-router-dom';
 import Posts from './components/Posts';
 
-interface IAppProps {
+interface INewPostsProps {
     name: string
 }
 
-interface IAppState {
+interface INewPostsState {
     posts: Array<{
         id: string,
         postId: string,
@@ -16,8 +17,8 @@ interface IAppState {
     }>
 }
 
-class App extends React.Component<IAppProps, IAppState> {
-    state: IAppState = {
+class NewPosts extends React.Component<INewPostsProps, INewPostsState> {
+    state: INewPostsState = {
         posts: []
     }
 
@@ -68,6 +69,8 @@ class App extends React.Component<IAppProps, IAppState> {
             onTrashPost={this.onTrashPost} />);
         return (
             <>
+                <Link className='underline text-blue-600 hover:text-blue-800'
+                    to='/collection'>Collection</Link>
                 <h2 className={'text-2xl mt-5 mb-4'}>New Arrivals, {name}</h2>
                 {posts}
             </>
@@ -75,4 +78,4 @@ class App extends React.Component<IAppProps, IAppState> {
     }
 }
 
-export default App;
+export default NewPosts;

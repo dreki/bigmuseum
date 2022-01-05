@@ -100,7 +100,6 @@ class Post extends React.Component<IPostProps, IPostState> {
      */
     constructor(props: IPostProps) {
         super(props);
-        // console.log(props);
         this.state = {
             imageLoaded: false,
             unloading: false,
