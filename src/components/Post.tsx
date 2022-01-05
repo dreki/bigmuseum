@@ -100,7 +100,7 @@ class Post extends React.Component<IPostProps, IPostState> {
      */
     constructor(props: IPostProps) {
         super(props);
-        console.log(props);
+        // console.log(props);
         this.state = {
             imageLoaded: false,
             unloading: false,
@@ -157,11 +157,11 @@ class Post extends React.Component<IPostProps, IPostState> {
     render(): React.ReactNode {
         return (
             <CSSTransition in={!this.state.unloading} timeout={500} classNames={'post-animation'}>
-                <div className={'bi-avoid shadow-sm rounded'}>
+                <div className={'bi-avoid shadow-sm rounded mb-4'}>
                     <Image imageLoaded={this.state.imageLoaded}
                         renderImageContentLoader={this.renderImageContentLoader()} src={this.props.imageUrl}
                         onImageLoaded={this.onImageLoaded.bind(this)} title={this.props.title} />
-                    <div className={'flex items-center justify-center mb-4'}>
+                    <div className={'flex items-center justify-center'}>
                         <CollectButton onClick={this.onCollectPost} />
                         <TrashButton onClick={this.onTrashPost.bind(this)} />
                     </div>

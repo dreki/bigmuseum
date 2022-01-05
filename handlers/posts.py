@@ -10,7 +10,7 @@ from settings import settings
 from tornado.web import HTTPError
 from utils.log import logger
 from utils.mongodb import (aggregate, and_, eq, in_, lookup, match, project,
-                           replace_with, sort, unwind)
+                           replace_with, sort, unwind, limit)
 from utils.redis import delete_cache, get_cache, set_cache
 
 from handlers.base import BaseHandler
@@ -70,7 +70,9 @@ class PostsHandler(BaseHandler):
             unwind('$hidden_filter'),
             match({'hidden_filter.should_hide': False}),
             project(hidden=False),
-            sort(Post.post_created_at.desc())  # type: ignore
+            sort(Post.post_created_at.desc()),  # type: ignore
+
+            limit(100)  # TODO: Remove this limit.
         ]
         posts: Sequence[Post] = await aggregate(engine=db,
                                                 aggregation=aggregation,

@@ -1,7 +1,6 @@
+import axios from 'axios';
 import React from "react";
 import Posts from './components/Posts';
-import Test from './components/Test';
-import axios from 'axios';
 
 interface IAppProps {
     name: string
@@ -23,9 +22,11 @@ class App extends React.Component<IAppProps, IAppState> {
     }
 
     public async componentDidMount(): Promise<void> {
+        console.log('> App.componentDidMount');
+
         // Load and set posts.
         const response = await axios.get('/api/posts?filter=new');
-        console.log(response);
+        // console.log(response);
 
         // const posts: Array<{ id: string, title: string, link: string }> = (await response.json()).items;
         const posts: Array<{
@@ -62,12 +63,13 @@ class App extends React.Component<IAppProps, IAppState> {
 
     render() {
         const { name } = this.props;
+        const posts = (<Posts posts={this.state.posts}
+            onCollectPost={this.onCollectPost}
+            onTrashPost={this.onTrashPost} />);
         return (
             <>
-                <h2 className={'text-2xl mt-5 mb-4'}>New Arrivals</h2>
-                <Posts posts={this.state.posts}
-                    onCollectPost={this.onCollectPost}
-                    onTrashPost={this.onTrashPost} />
+                <h2 className={'text-2xl mt-5 mb-4'}>New Arrivals, {name}</h2>
+                {posts}
             </>
         );
     }
