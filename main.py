@@ -60,7 +60,7 @@ def make_app() -> tornado.web.Application:
                 name='app'
             )
         ],
-        static_path=os.path.join(os.path.dirname(__file__), 'dist'),
+        static_path=static_path,
         autoreload=True,
         **settings
     )

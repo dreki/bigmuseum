@@ -1,3 +1,4 @@
+import axios, { AxiosResponse } from 'axios';
 import React from 'react';
 
 
@@ -13,6 +14,12 @@ class Collection extends React.Component<ICollectionProps, ICollectionState> {
         super(props);
         this.state = {
         };
+    }
+
+    public async componentDidMount(): Promise<void> {
+        const response: AxiosResponse = await axios.get('/api/collection/items');
+        console.log('> Collection.componentDidMount, response:');
+        console.log(response);
     }
 
     render() {

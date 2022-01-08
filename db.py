@@ -8,7 +8,7 @@ from settings import settings
 engine: Optional[AIOEngine] = None
 
 
-class TimestampingAIOEngine(AIOEngine):
+class HookedAIOEngine(AIOEngine):
 
     async def save(self, instance: ModelType) -> ModelType:
         """Handle saving."""
@@ -30,6 +30,6 @@ async def get_engine() -> AIOEngine:
                          f':{settings.get("mongo_password")}'
                          f'@{settings.get("mongo_host")}/')
     client: AsyncIOMotorClient = AsyncIOMotorClient(connection_string)
-    engine = TimestampingAIOEngine(motor_client=client,
-                                   database=settings.get('mongo_db', 'bigmuseum'))
+    engine = HookedAIOEngine(motor_client=client,
+                             database=settings.get('mongo_db', 'bigmuseum'))
     return engine

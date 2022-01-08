@@ -1,5 +1,5 @@
 """Holds code for items in someone's collection."""
-from typing import Dict, Optional
+from typing import Dict, Optional, Sequence
 from asyncpraw.reddit import Reddit, Redditor
 from db import get_engine
 from models.curation import Curation
@@ -15,6 +15,18 @@ from handlers.base import BaseHandler
 
 class CollectionItemsHandler(BaseHandler):
     """Represents reading and changing items in a person's collection."""
+
+    async def get(self):
+        """Handle GET request."""
+        session: Session = await self.get_session()
+        # Get Curations for the current user.
+        db: AIOEngine = await get_engine()
+        curations: Sequence[Curation] = \
+            await db.find(Curation, Curation.user == self.current_user.id)
+        logger.debug(f'> curations:')
+        logger.debug(curations)
+        await self.json({'success': True, 'curations': curations})
+        
 
     async def post(self):
         """Handle POST request."""
