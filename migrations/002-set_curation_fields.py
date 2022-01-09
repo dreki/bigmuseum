@@ -2,8 +2,12 @@
 Add `created_at`, `updated_at`, and `image_url` to the `curation` collection.
 """
 from datetime import datetime
+
 import pymongo
+from pymongo.command_cursor import CommandCursor
 from pymongo.database import Database
+from rich import print
+from rich.markdown import Markdown
 
 name = '002-set_curation_fields'
 dependencies = ['001-add_curation_index']
@@ -33,14 +37,59 @@ def upgrade(db: Database):
     #     # }
     # ])
 
+    # Run an aggregation to lookup the `image_url` field from the `post` collection.
+    cursor: CommandCursor = db.curation.aggregate([
+        {'$lookup': {
+            'from': 'post',
+            'localField': 'post',
+            'foreignField': '_id',
+            'as': 'post'
+        }},
+        {'$unwind': '$post'},
+        {'$addFields': {
+            'image_url': '$post.image_url'
+        }},
+        {'$project': {
+            'image_url': 1,
+            'created_at': 1,
+            'updated_at': 1,
+            'post': 1,
+            'user': 1
+        }}
+    ])
+
+    # print(f'> {len(list(cursor))} curations found.')
+    print('> curations:')
+    for curation in cursor:
+        print(Markdown(f'# Curation'))
+        print(f'  {curation["_id"]}')
+        print(f'    image_url: {curation["image_url"]}')
+        # print(f'    created_at: {curation["created_at"]}')
+        # print(f'    updated_at: {curation["updated_at"]}')
+        print(f'    post: {curation["post"]["_id"]}')
+        # print(f'    user: {curation["user"]["_id"]}')
+        print(flush=True)
+
+        # Update curation document to have `created_at` and `updated_at` fields,
+        # and the `image_url` field from the `post` collection.
+        db.curation.update_one(
+            {'_id': curation['_id']},
+            {'$set': {
+                'created_at': datetime.utcnow(),
+                'updated_at': datetime.utcnow(),
+                'image_url': curation['image_url']}}
+        )
+
+    # raise NotImplementedError(f'Implementation not yet complete.')
+
     # Update all `curation` documents to have `created_at` and `updated_at` fields, and set them to the current time.
     # Also, add the `image_url` field.
-    db.curation.update_many(
-        {'created_at': {'$exists': False}},
-        {'$set': {'created_at': datetime.utcnow(),
-                  'updated_at': datetime.utcnow(),
-                  'image_url': None}}
-    )
+    # db.curation.update_many(
+    #     {'created_at': {'$exists': False}},
+    #     {'$set': {'created_at': datetime.utcnow(),
+    #               'updated_at': datetime.utcnow(),
+    #               'image_url': None}}
+    # )
 
 
 def downgrade(db: Database):
