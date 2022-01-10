@@ -46,6 +46,7 @@ async def _cache_posts():
         post_created_utc: datetime.datetime = datetime.datetime.fromtimestamp(post.created_utc)
         if post_created_utc < last_run.value:
             continue
+        logger.debug(f'> post.id: {post.id}')
         post: Submission
         logger.info(f'> caching {post.title}')
         cached_post: Post = Post(post_id=post.id,

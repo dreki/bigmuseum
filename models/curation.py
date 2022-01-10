@@ -11,6 +11,7 @@ class Curation(Model):
     """A curation a user makes of a work of a post/work of art."""
 
     image_url: str
+    title: str
     post: Post = Reference()
     user: User = Reference()
     created_at: datetime = Field(default_factory=datetime.utcnow)

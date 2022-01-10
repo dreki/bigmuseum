@@ -23,10 +23,7 @@ class CollectionItemsHandler(BaseHandler):
         db: AIOEngine = await get_engine()
         curations: Sequence[Curation] = \
             await db.find(Curation, Curation.user == self.current_user.id)
-        logger.debug(f'> curations:')
-        logger.debug(curations)
-        await self.json({'success': True, 'curations': curations})
-        
+        await self.json({'success': True, 'items': [c.dict() for c in curations]})
 
     async def post(self):
         """Handle POST request."""
