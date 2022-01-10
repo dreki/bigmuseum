@@ -58,7 +58,7 @@ def make_app() -> tornado.web.Application:
                     'default_filename': 'index.html',
                 },
                 name='app'
-            )
+            ),
         ],
         static_path=static_path,
         autoreload=True,
