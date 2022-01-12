@@ -9,7 +9,7 @@ const config = {
   entry: './src/index.tsx',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js'
+    filename: 'bundle.[contenthash].js'
   },
   devtool: 'source-map',
   module: {
