@@ -28,10 +28,10 @@ class CollectionItemsHandler(BaseHandler):
     async def post(self):
         """Handle POST request."""
         session: Session = await self.get_session()
-        logger.debug(f'> session:')
-        logger.debug(session)
-        logger.debug('> a dict:')
-        logger.debug({'first': 1, 'second': 2})
+        # logger.debug(f'> session:')
+        # logger.debug(session)
+        # logger.debug('> a dict:')
+        # logger.debug({'first': 1, 'second': 2})
         reddit: Optional[Reddit] = await self.make_reddit_client()
         if not reddit:
             raise HTTPError(status_code=401,
@@ -61,8 +61,10 @@ class CollectionItemsHandler(BaseHandler):
             raise HTTPError(status_code=400, reason='Post not found.')
         logger.debug(f'> save {post_id}')
         # Save the `Post` to the user's collection.
-        curation: Curation = Curation(user=self.current_user,
-                                      post=post)
+        # curation: Curation = Curation(user=self.current_user,
+        #                               post=post)
+        curation: Curation = Curation.from_post_and_user(post=post,
+                                                         user=self.current_user)
         logger.debug(f'> curation:')
         logger.debug(curation)
         # await self.finish('')
