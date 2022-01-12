@@ -21,5 +21,6 @@ class Curation(Model):
     def from_post_and_user(cls, post: Post, user: User) -> 'Curation':
         """Create a curation from a post."""
         return Curation(image_url=post.image_url,
+                        title=post.title,
                         post=post,
                         user=user)
