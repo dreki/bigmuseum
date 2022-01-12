@@ -9,6 +9,7 @@ interface ICollectionProps {
 interface ICollectionState {
     curations: Array<{
         id: string,
+        title: string,
         imageUrl: string,
         createdAt: Date,
         updatedAt: Date
@@ -31,7 +32,7 @@ class Collection extends React.Component<ICollectionProps, ICollectionState> {
 
     render() {
         // const curations = ()
-        const curations = <Curations />;
+        const curations = <Curations curations={this.state.curations} />;
         return (
             <div>
                 <h2 className='text-2xl mt-5 mb-4'>Collection</h2>
