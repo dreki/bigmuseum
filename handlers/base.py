@@ -89,11 +89,6 @@ class BaseHandler(tornado.web.RequestHandler):
         session: Optional[Session] = await engine.find_one(Session,
                                                            Session.key == key)
         # Create `Session` record if it's missing.
-        # logger.debug(f'> session: {session}')
-        logger.debug(f'> get_session, session:')
-        logger.debug(session)
-        logger.debug('> a dict:')
-        logger.debug({'first': 1, 'second': 2})
         if not session:
             session = Session(key=key)
             await engine.save(session)

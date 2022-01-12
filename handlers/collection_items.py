@@ -28,27 +28,15 @@ class CollectionItemsHandler(BaseHandler):
     async def post(self):
         """Handle POST request."""
         session: Session = await self.get_session()
-        # logger.debug(f'> session:')
-        # logger.debug(session)
-        # logger.debug('> a dict:')
-        # logger.debug({'first': 1, 'second': 2})
         reddit: Optional[Reddit] = await self.make_reddit_client()
         if not reddit:
             raise HTTPError(status_code=401,
                             reason='Failed to get Reddit client for current user.')
-        # logger.debug(dir(reddit.user))
-        # logger.debug(dir(await reddit.user.me()))
         redditor: Optional[Redditor] = await reddit.user.me()
         if not redditor:
             raise
         logger.debug(f'> {redditor.name} ({redditor.id})')
-        # post_id: str = self.get_argument('post_id')
-        # logger.debug(f'> save {post_id}')
-
-        # logger.debug(self.get_body_argument('post_id'))
-
         # Get JSON body of request
-        # logger.debug(self.request.body)
         json_body: Dict = await self.get_json_body()
         logger.debug(f'> json_body: {json_body}')
         post_id: Optional[str] = json_body.get('post_id')
@@ -61,8 +49,6 @@ class CollectionItemsHandler(BaseHandler):
             raise HTTPError(status_code=400, reason='Post not found.')
         logger.debug(f'> save {post_id}')
         # Save the `Post` to the user's collection.
-        # curation: Curation = Curation(user=self.current_user,
-        #                               post=post)
         curation: Curation = Curation.from_post_and_user(post=post,
                                                          user=self.current_user)
         logger.debug(f'> curation:')
