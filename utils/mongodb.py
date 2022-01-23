@@ -112,11 +112,15 @@ limit = MongoExpression('$limit')
 
 in_ = MongoExpression('$in')
 
+not_ = MongoExpression('$not')
+
 nin = MongoExpression('$nin')
 
 exists = MongoExpression('$exists')
 
 set_ = MongoExpression('$set')
+
+unset = MongoExpression('$unset')
 
 set_union = MongoExpression('$setUnion')
 
