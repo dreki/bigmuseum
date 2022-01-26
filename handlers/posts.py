@@ -3,18 +3,19 @@ from os import pipe
 from typing import Dict, List, Optional, Sequence
 
 from asyncpraw.reddit import Reddit, Submission
-from odmantic.query import desc
 from db import AIOEngine, get_engine
 from models.curation import Curation
 from models.post import Post
 from models.user import User
 from odmantic.bson import ObjectId
+from odmantic.query import desc
 from settings import settings
 from tornado.web import HTTPError
 from utils.log import logger
-from utils.mongodb import (aggregate, aggregate_as_dicts, and_, eq, expr, in_,
-                           limit, lookup, match, project, replace_with, sort,
-                           unwind, cond, gt, size, set_, not_, unset, match_expr)
+from utils.mongodb import (aggregate, aggregate_as_dicts, and_, cond, eq, expr,
+                           gt, in_, limit, lookup, match, match_expr, not_,
+                           not_in, project, replace_with, set_, size, sort,
+                           unset, unwind)
 from utils.redis import delete_cache, get_cache, set_cache
 
 from handlers.base import BaseHandler
@@ -94,9 +95,19 @@ class PostsHandler(BaseHandler):
                    ],
                    as_=+User),
             unwind(f'${+User}'),
+
+            # Exclude hidden posts.
+            # match_expr(not_(in_(
+            #     [f'${+Post.id}',  # type: ignore
+            #      f'${+User}.{+User.hidden_posts}'])))  # type: ignore
+            match_expr(not_in(
+                [f'${+Post.id}',  # type: ignore
+                 f'${+User}.{+User.hidden_posts}']))  # type: ignore
         ]
         logger.debug('> aggregation:')
-        logger.debug(aggregation)
+        # logger.debug(aggregation)
+        from rich.pretty import pprint
+        pprint(aggregation, indent_guides=False)
         # posts: Sequence[Post] = await aggregate(engine=db,
         #                                         aggregation=aggregation,
         #                                         model=Post)

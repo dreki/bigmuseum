@@ -125,6 +125,8 @@ in_ = MongoExpression('$in')
 
 not_ = MongoExpression('$not')
 
+not_in = MongoExpression('$in', wrap_with=not_)
+
 nin = MongoExpression('$nin')
 
 exists = MongoExpression('$exists')
