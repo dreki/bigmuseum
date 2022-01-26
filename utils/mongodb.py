@@ -55,16 +55,10 @@ class MongoExpression:
         """Initialize."""
         self.stage_name = stage_name
         self.convert_kwargs_to_camel = convert_kwargs_to_camel
-        from rich import print
-        print(f'> (__init__) wrap_with: {wrap_with}')
         self.wrap_with = wrap_with
 
     def __call__(self, *args, **kwargs) -> Dict:
         """Return a usable MongoDB expression."""
-        # output = {self.stage_name: first_arg}
-        from rich import print
-        print(f'> ({self.stage_name}) args: {args} kwargs: {kwargs}')
-
         output: Dict = {}
         if args:
             first_arg: Any = args[0]
@@ -72,19 +66,12 @@ class MongoExpression:
             if issubclass(type(first_arg), dict):
                 first_arg = dict(first_arg.items())
             output = {self.stage_name: first_arg}
-            print(f'  > ({self.stage_name}) in `if args` output: {output}')
             output.update(kwargs or {})
-            # return output
         if not args and self.convert_kwargs_to_camel:
             kwargs = humps.camelize(kwargs)
             output = {self.stage_name: kwargs}
-        # return {self.stage_name: kwargs}
-        # return {self.stage_name: kwargs}
-        # print(f'> wrap_with: {self.wrap_with}')
-        print(f'> ({self.stage_name}) output before wrap_with: {output}')
         if self.wrap_with:
             output = self.wrap_with(output)
-        print(f'> ({self.stage_name}) output after wrap_with: {output}')
         return output
 
 
