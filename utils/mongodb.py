@@ -1,5 +1,5 @@
 """Holds utilities for working with MongoDB aggregation pipelines."""
-
+from __future__ import annotations
 from contextlib import asynccontextmanager
 from functools import singledispatch
 from typing import Any, Dict, List, Optional, Sequence, Type, TypeVar, Union
@@ -48,33 +48,57 @@ def lookup(from_: str,
 class MongoExpression:
     """Allows conveniently specifying MongoDB aggregation stages in Python code."""
 
-    def __init__(self, stage_name: str, convert_kwargs_to_camel: bool = False):
-        """Initializer"""
+    def __init__(self,
+                 stage_name: str,
+                 convert_kwargs_to_camel: bool = False,
+                 wrap_with: Optional[MongoExpression] = None) -> None:
+        """Initialize."""
         self.stage_name = stage_name
         self.convert_kwargs_to_camel = convert_kwargs_to_camel
+        from rich import print
+        print(f'> (__init__) wrap_with: {wrap_with}')
+        self.wrap_with = wrap_with
 
     def __call__(self, *args, **kwargs) -> Dict:
         """Return a usable MongoDB expression."""
+        # output = {self.stage_name: first_arg}
+        from rich import print
+        print(f'> ({self.stage_name}) args: {args} kwargs: {kwargs}')
+
+        output: Dict = {}
         if args:
             first_arg: Any = args[0]
             # Support dict subclasses, like `SortExpression`.
             if issubclass(type(first_arg), dict):
                 first_arg = dict(first_arg.items())
             output = {self.stage_name: first_arg}
+            print(f'  > ({self.stage_name}) in `if args` output: {output}')
             output.update(kwargs or {})
-            return output
-        if self.convert_kwargs_to_camel:
+            # return output
+        if not args and self.convert_kwargs_to_camel:
             kwargs = humps.camelize(kwargs)
-        return {self.stage_name: kwargs}
+            output = {self.stage_name: kwargs}
+        # return {self.stage_name: kwargs}
+        # return {self.stage_name: kwargs}
+        # print(f'> wrap_with: {self.wrap_with}')
+        print(f'> ({self.stage_name}) output before wrap_with: {output}')
+        if self.wrap_with:
+            output = self.wrap_with(output)
+        print(f'> ({self.stage_name}) output after wrap_with: {output}')
+        return output
 
 
 match = MongoExpression('$match')
+
+# def match_expr()
 
 unwind = MongoExpression('$unwind', convert_kwargs_to_camel=True)
 
 add_fields = MongoExpression('$addFields')
 
 expr = MongoExpression('$expr')
+
+match_expr = MongoExpression('$expr', wrap_with=match)
 
 eq = MongoExpression('$eq')
 

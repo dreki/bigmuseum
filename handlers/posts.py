@@ -1,4 +1,5 @@
 """Holds handlers related to Reddit posts."""
+from os import pipe
 from typing import Dict, List, Optional, Sequence
 
 from asyncpraw.reddit import Reddit, Submission
@@ -13,7 +14,7 @@ from tornado.web import HTTPError
 from utils.log import logger
 from utils.mongodb import (aggregate, aggregate_as_dicts, and_, eq, expr, in_,
                            limit, lookup, match, project, replace_with, sort,
-                           unwind, cond, gt, size, set_, not_, unset)
+                           unwind, cond, gt, size, set_, not_, unset, match_expr)
 from utils.redis import delete_cache, get_cache, set_cache
 
 from handlers.base import BaseHandler
@@ -59,142 +60,57 @@ class PostsHandler(BaseHandler):
         db: AIOEngine = await get_engine()
 
         # Get `Post`s, excluding the `User`'s hidden posts.
+        # aggregation: Sequence[Dict] = [
+        #     lookup(
+        #         from_=+User,
+        #         let={'user_id': self.current_user.id},
+        #         pipeline=[
+        #             match(expr({+User.id: '$$user_id'})),  # type: ignore
+        #             replace_with({'hidden_posts': '$hidden_posts'}),
+        #         ],
+        #         as_=+User
+        #     ),
+        #     unwind(f'${+User}'),
+
+        #     set_(hidden_posts=f'${+User}.{+User.hidden_posts}'),  # type: ignore
+        #     unset(+User),
+
+        #     # Exclude hidden posts.
+        #     match(expr(not_(in_([++Post.id,  # type: ignore
+        #                          ++User.hidden_posts])))),  # type: ignore
+
+        #     # Limit to 200 posts.
+        #     # limit(200),
+        #     limit(40),
+        # ]
         aggregation: Sequence[Dict] = [
-            lookup(
-                from_=+User,
-                # let={'user_id': self.},})
-                let={'user_id': self.current_user.id},
-                pipeline=[
-                    # match(expr(User.id == '$user_id')),
-                    # match({+User.id: self.current_user.id}),  # type: ignore
-                    match(expr({+User.id: '$$user_id'})),  # type: ignore
-                    replace_with({'hidden_posts': '$hidden_posts'}),
-                ],
-                # as_='hidden_posts',
-                as_=+User
-            ),
-            # unwind('$hidden_posts'),
+            lookup(from_=+User,
+                   let={'user_id': self.current_user.id,
+                        'post_id': '$_id'},
+                   pipeline=[
+                       #    match_expr(f'{+User.id}'=$$user_id),
+                       match_expr({f'{+User.id}': '$$user_id'}),  # type: ignore
+                       replace_with({'hidden_posts': '$hidden_posts'}),
+                   ],
+                   as_=+User),
             unwind(f'${+User}'),
-
-            set_(hidden_posts=f'${+User}.{+User.hidden_posts}'),  # type: ignore
-            #   {'$unwind': '$user'},
-            #   {'$set': {'hidden_posts': '$user.hidden_posts'}},
-            #   // Remove `user` from the output.
-            #   {'$unset': 'user'},
-            unset(+User),
-
-
-            # Exclude hidden posts.
-            # match(expr(nin([+Post.id, '$hidden_posts.hidden_posts']))),  # type: ignore
-            # match(expr(not_([in_([+Post.id, '$hidden_posts.hidden_posts'])]))),  # type: ignore
-
-            
-            match(expr(not_(in_([++Post.id,  # type: ignore
-                                 ++User.hidden_posts])))),  # type: ignore
-# {'$match': {'$expr': {'$not': {'$in': ['$_id', '$hidden_posts']}}}},
-
-            # Limit to 200 posts.
-            # limit(200),
-            limit(40),
         ]
         logger.debug('> aggregation:')
         logger.debug(aggregation)
-        posts: Sequence[Post] = await aggregate(engine=db,
-                                                aggregation=aggregation,
-                                                model=Post)
-
-        # Get 200 `Post`s.
-        # posts: Sequence[Post] = await db.find(Post, limit=200, sort=desc(Post.post_created_at))
-
-        # # Get hidden `Post`s for current user.
-        # hidden_posts: Optional[Sequence[ObjectId]] = self.current_user.hidden_posts
-        # if hidden_posts:
-        #     logger.debug(hidden_posts)
-        #     # Remove hidden `Post`s from list.
-        #     posts = [p for p in posts if p.id not in hidden_posts]
-        #     logger.debug(f'> posts to exclude:')
-        #     logger.debug([p for p in posts if p.id in hidden_posts])
-        #     logger.debug(f'> sample id of a post: {posts[0].id}')
-
-
-
-        # aggregation: List[dict] = [
-        #     lookup(
-        #         from_=+User,
-        #         let={
-        #             f'{+User}_{+User.id}': self.current_user.id,  # type: ignore
-        #             f'{+Post}_{+Post.id}': ++Post.id,  # type: ignore
-        #         },
-        #         pipeline=[
-        #             replace_with(
-        #                 should_hide=and_([
-        #                     eq([++User.id, f'$${+User}_{+User.id}']),  # type: ignore  # noqa
-        #                     in_([f'$${+Post}_{+Post.id}', ++User.hidden_posts]),  # type: ignore  # noqa
-        #                 ])
-        #             )
-        #         ],
-        #         as_='hidden_filter'),
-        #     unwind('$hidden_filter'),
-        #     match({'hidden_filter.should_hide': False}),
-
-        #     # Include whether there's a `Curation` for this post.
-        #     # lookup(
-        #     #     from_=+Curation,
-        #     #     let={
-        #     #         # f'{+Curation}_{+Curation.post}': ++Post.id,  # type: ignore
-        #     #         f'{+Post}_{+Post.id}': ++Post.id,  # type: ignore
-        #     #         # f'{+Curation}_{+Curation.user}': self.current_user.id,  # type: ignore
-        #     #         f'{+User}_{+User.id}': self.current_user.id,  # type: ignore
-        #     #     },
-        #     #     pipeline=[
-        #     #         match(expr(eq([++Curation.user, f'$${+User}_{+User.id}']))),  # type: ignore  # noqa
-        #     #         match(expr(eq([++Curation.post, f'$${+Post}_{+Post.id}']))),  # type: ignore  # noqa
-        #     #         replace_with(
-        #     #             # has_curation=eq([f'$${+Curation}_{+Curation.post}', f'$${+Post}_{+Post.id}'])  # type: ignore  # noqa
-        #     #             has_curation=eq([++Curation.post, f'$${+Post}_{+Post.id}'])  # type: ignore  # noqa
-        #     #         )
-        #     #     ],
-        #     #     as_='has_curation'),
-        #     # unwind('$has_curation'),
-
-
-        #     # Include `Curation`s for this post and user.
-        #     lookup(
-        #         from_=+Curation,
-        #         let={
-        #             f'{+Post}_{+Post.id}': ++Post.id,  # type: ignore
-        #             f'{+User}_{+User.id}': self.current_user.id,  # type: ignore
-        #         },
-        #         pipeline=[
-        #             match(expr(eq([++Curation.post, f'$${+Post}_{+Post.id}']))),  # type: ignore  # noqa
-        #             match(expr(eq([++Curation.user, f'$${+User}_{+User.id}']))),  # type: ignore  # noqa
-        #         ],
-        #         as_='curations',
-        #     ),
-
-        #     set_(has_curation=cond([gt(size('$curations'), 0), True, False])),
-
-        #     # match({'has_curation.has_curation': False}),
-        #     project(hidden_filter=False),
-        #     sort(Post.post_created_at.desc()),  # type: ignore
-
-        #     # limit(100)  # TODO: Remove this limit.
-        #     limit(200)  # TODO: Remove this limit.
-        # ]
-        # print(aggregation)
         # posts: Sequence[Post] = await aggregate(engine=db,
         #                                         aggregation=aggregation,
         #                                         model=Post)
+        # return [p.dict() for p in posts]
 
-        # posts: Sequence[Dict] = await aggregate_as_dicts(engine=db,
-        #                                                  aggregation=aggregation,
-        #                                                  model=Post)
-
-        # logger.debug(f"> match expr {match(expr(eq([+Curation.user, f'$${+User}_{+User.id}'])))}")
-        # logger.debug('> posts:')
-        # logger.debug(posts)
-        # return posts
-        return [p.dict() for p in posts]
+        # return await aggregate_as_dicts(engine=db,
+        #                                 aggregation=aggregation,
+        #                                 model=Post)
+        result: Sequence[Dict] = await aggregate_as_dicts(engine=db,
+                                                          aggregation=aggregation,
+                                                          model=Post)
+        logger.debug('> result:')
+        logger.debug(result)
+        return []
 
     async def get(self):
         """Handle GET request."""
