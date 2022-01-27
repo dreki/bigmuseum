@@ -44,7 +44,7 @@ class PostsHandler(BaseHandler):
                         expire_seconds=settings.get('new_posts_cache_expiration_seconds'))
 
     async def _hide_on_reddit(self, post_id: str):
-        """Hide a post on Reddit. (Note: This function is untested.)"""
+        """Hide a post on Reddit (Note: This function is untested)."""
         # Get reddit instance
         reddit: Optional[Reddit] = await self.make_reddit_client()
         if not reddit:
@@ -55,42 +55,16 @@ class PostsHandler(BaseHandler):
         # Hide submission
         await submission.hide()
 
-    # async def _fetch_posts(self) -> Sequence[Post]:
     async def _fetch_posts(self) -> Sequence[Dict]:
         """Fetch `Post`s from the database."""
         db: AIOEngine = await get_engine()
 
         # Get `Post`s, excluding the `User`'s hidden posts.
-        # aggregation: Sequence[Dict] = [
-        #     lookup(
-        #         from_=+User,
-        #         let={'user_id': self.current_user.id},
-        #         pipeline=[
-        #             match(expr({+User.id: '$$user_id'})),  # type: ignore
-        #             replace_with({'hidden_posts': '$hidden_posts'}),
-        #         ],
-        #         as_=+User
-        #     ),
-        #     unwind(f'${+User}'),
-
-        #     set_(hidden_posts=f'${+User}.{+User.hidden_posts}'),  # type: ignore
-        #     unset(+User),
-
-        #     # Exclude hidden posts.
-        #     match(expr(not_(in_([++Post.id,  # type: ignore
-        #                          ++User.hidden_posts])))),  # type: ignore
-
-        #     # Limit to 200 posts.
-        #     # limit(200),
-        #     limit(40),
-        # ]
         aggregation: Sequence[Dict] = [
             lookup(from_=+User,
                    let={'user_id': self.current_user.id,
                         'post_id': '$_id'},
                    pipeline=[
-                       #    match_expr(f'{+User.id}'=$$user_id),
-                    #    match_expr_eq({f'{+User.id}': '$$user_id'}),  # type: ignore
                        match_expr_eq([f'${+User.id}', '$$user_id']),  # type: ignore
                        replace_with({'hidden_posts': '$hidden_posts'}),
                    ],
@@ -98,9 +72,6 @@ class PostsHandler(BaseHandler):
             unwind(f'${+User}'),
 
             # Exclude hidden posts.
-            # match_expr(not_(in_(
-            #     [f'${+Post.id}',  # type: ignore
-            #      f'${+User}.{+User.hidden_posts}'])))  # type: ignore
             match_expr(not_in(
                 [f'${+Post.id}',  # type: ignore
                  f'${+User}.{+User.hidden_posts}'])),  # type: ignore
@@ -109,13 +80,11 @@ class PostsHandler(BaseHandler):
             lookup(from_=+Curation,
                    let={'post_id': '$_id'},
                    pipeline=[
-                       # match_expr({f'{+Curation.post}': '$$post_id'}),  # type: ignore
                        match_expr_eq([f'${+Curation.post}', '$$post_id']),  # type: ignore
                    ],
                    as_=f'{+Curation}s'),
-            
+
             # If there are `curations`, add has_curations to result
-            #{'$addFields': {'has_curations': {'$gt': [{$size: '$curations'}, 0]}}},
             add_fields(has_curations=gt([size(f'${+Curation}s'), 0])),
 
             # Remove curations and user from result.
@@ -127,26 +96,14 @@ class PostsHandler(BaseHandler):
             unset(+Post.id),  # type: ignore
 
             # Limit to 50
+            # TODO: Limit based on date, etc.
             limit(50),
         ]
-        logger.debug('> aggregation:')
-        # logger.debug(aggregation)
-        from rich.pretty import pprint
-        pprint(aggregation, indent_guides=False)
-        # posts: Sequence[Post] = await aggregate(engine=db,
-        #                                         aggregation=aggregation,
-        #                                         model=Post)
-        # return [p.dict() for p in posts]
-
-        # return await aggregate_as_dicts(engine=db,
-        #                                 aggregation=aggregation,
-        #                                 model=Post)
+        # from rich.pretty import pprint
+        # pprint(aggregation, indent_guides=False)
         result: Sequence[Dict] = await aggregate_as_dicts(engine=db,
                                                           aggregation=aggregation,
                                                           model=Post)
-        # logger.debug('> result:')
-        # logger.debug(result)
-        # return []
         return result
 
     async def get(self):
@@ -162,11 +119,8 @@ class PostsHandler(BaseHandler):
             await self.json({'items': cached_posts})
             return
         logger.debug('> cache missing; fetching posts')
-        # posts: Sequence[Post] = await self._fetch_posts()
         posts: Sequence[Dict] = await self._fetch_posts()
         await self._set_cached_posts(posts)
-        logger.debug('> returning posts')
-        # await self.json({'items': [p.dict() for p in posts]})
         await self.json({'items': posts})
 
     async def delete(self, post_id):
