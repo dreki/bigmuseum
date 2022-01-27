@@ -122,6 +122,10 @@ class PostsHandler(BaseHandler):
             unset(f'{+Curation}s'),
             unset(f'{+User}'),
 
+            # Project `_id` as `id`
+            add_fields(id=f'${+Post.id}'),  # type: ignore
+            unset(+Post.id),  # type: ignore
+
             # Limit to 50
             limit(50),
         ]
