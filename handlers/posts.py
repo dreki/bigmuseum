@@ -15,7 +15,7 @@ from utils.log import logger
 from utils.mongodb import (aggregate, aggregate_as_dicts, and_, cond, eq, expr,
                            gt, in_, limit, lookup, match, match_expr, not_,
                            not_in, project, replace_with, set_, size, sort,
-                           unset, unwind)
+                           unset, unwind, match_expr_eq, add_fields)
 from utils.redis import delete_cache, get_cache, set_cache
 
 from handlers.base import BaseHandler
@@ -90,7 +90,8 @@ class PostsHandler(BaseHandler):
                         'post_id': '$_id'},
                    pipeline=[
                        #    match_expr(f'{+User.id}'=$$user_id),
-                       match_expr({f'{+User.id}': '$$user_id'}),  # type: ignore
+                    #    match_expr_eq({f'{+User.id}': '$$user_id'}),  # type: ignore
+                       match_expr_eq([f'${+User.id}', '$$user_id']),  # type: ignore
                        replace_with({'hidden_posts': '$hidden_posts'}),
                    ],
                    as_=+User),
@@ -102,7 +103,27 @@ class PostsHandler(BaseHandler):
             #      f'${+User}.{+User.hidden_posts}'])))  # type: ignore
             match_expr(not_in(
                 [f'${+Post.id}',  # type: ignore
-                 f'${+User}.{+User.hidden_posts}']))  # type: ignore
+                 f'${+User}.{+User.hidden_posts}'])),  # type: ignore
+
+            # Add matching `Curation`s.
+            lookup(from_=+Curation,
+                   let={'post_id': '$_id'},
+                   pipeline=[
+                       # match_expr({f'{+Curation.post}': '$$post_id'}),  # type: ignore
+                       match_expr_eq([f'${+Curation.post}', '$$post_id']),  # type: ignore
+                   ],
+                   as_=f'{+Curation}s'),
+            
+            # If there are `curations`, add has_curations to result
+            #{'$addFields': {'has_curations': {'$gt': [{$size: '$curations'}, 0]}}},
+            add_fields(has_curations=gt([size(f'${+Curation}s'), 0])),
+
+            # Remove curations and user from result.
+            unset(f'{+Curation}s'),
+            unset(f'{+User}'),
+
+            # Limit to 50
+            limit(50),
         ]
         logger.debug('> aggregation:')
         # logger.debug(aggregation)
@@ -119,9 +140,10 @@ class PostsHandler(BaseHandler):
         result: Sequence[Dict] = await aggregate_as_dicts(engine=db,
                                                           aggregation=aggregation,
                                                           model=Post)
-        logger.debug('> result:')
-        logger.debug(result)
-        return []
+        # logger.debug('> result:')
+        # logger.debug(result)
+        # return []
+        return result
 
     async def get(self):
         """Handle GET request."""

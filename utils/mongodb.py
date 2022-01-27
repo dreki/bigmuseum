@@ -67,8 +67,10 @@ class MongoExpression:
                 first_arg = dict(first_arg.items())
             output = {self.stage_name: first_arg}
             output.update(kwargs or {})
-        if not args and self.convert_kwargs_to_camel:
+        if not args and self.convert_kwargs_to_camel and kwargs:
             kwargs = humps.camelize(kwargs)
+            output = {self.stage_name: kwargs}
+        if not args and not self.convert_kwargs_to_camel and kwargs:
             output = {self.stage_name: kwargs}
         if self.wrap_with:
             output = self.wrap_with(output)
@@ -77,8 +79,6 @@ class MongoExpression:
 
 match = MongoExpression('$match')
 
-# def match_expr()
-
 unwind = MongoExpression('$unwind', convert_kwargs_to_camel=True)
 
 add_fields = MongoExpression('$addFields')
@@ -86,6 +86,8 @@ add_fields = MongoExpression('$addFields')
 expr = MongoExpression('$expr')
 
 match_expr = MongoExpression('$expr', wrap_with=match)
+
+match_expr_eq = MongoExpression('$eq', wrap_with=match_expr)
 
 eq = MongoExpression('$eq')
 
