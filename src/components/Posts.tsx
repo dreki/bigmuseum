@@ -11,6 +11,7 @@ interface IPostsProps {
         postId: string,
         title: string,
         imageUrl: string,
+        hasCurations: boolean,
         postCreatedAt: Date
     }>;
     onCollectPost?: ((postId: string) => void);

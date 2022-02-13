@@ -13,6 +13,7 @@ interface IPostProps {
     postId: string;
     title: string;
     imageUrl: string,
+    hasCurations: boolean,
     postCreatedAt: Date
 
     onCollectPost?: ((postId: string) => void),
@@ -154,12 +155,17 @@ class Post extends React.Component<IPostProps, IPostState> {
      * @returns {React.ReactNode}
      */
     render(): React.ReactNode {
+        let hasCurations = <></>;
+        if (this.props.hasCurations) {
+            hasCurations = <em>Has curations</em>;
+        }
         return (
             <CSSTransition in={!this.state.unloading} timeout={500} classNames={'post-animation'}>
                 <div className={'bi-avoid shadow-sm rounded mb-4'}>
                     <Image imageLoaded={this.state.imageLoaded}
                         renderImageContentLoader={this.renderImageContentLoader()} src={this.props.imageUrl}
                         onImageLoaded={this.onImageLoaded.bind(this)} title={this.props.title} />
+                    {hasCurations}
                     <div className={'flex items-center justify-center'}>
                         <CollectButton onClick={this.onCollectPost} />
                         <TrashButton onClick={this.onTrashPost.bind(this)} />

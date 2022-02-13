@@ -13,6 +13,7 @@ interface INewPostsState {
         postId: string,
         title: string,
         imageUrl: string,
+        hasCurations: boolean,
         postCreatedAt: Date
     }>
 }
@@ -35,7 +36,7 @@ class NewPosts extends React.Component<INewPostsProps, INewPostsState> {
             title: string,
             // link: string,
             imageUrl: string,
-
+            hasCurations: boolean,
             postId: string,
             postCreatedAt: Date
         }> = response.data.items;
