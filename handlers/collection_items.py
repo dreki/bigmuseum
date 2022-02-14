@@ -9,6 +9,7 @@ from odmantic.bson import ObjectId
 from odmantic.engine import AIOEngine
 from tornado.web import HTTPError
 from utils.log import logger
+from utils.mongodb import (aggregate_as_dicts, match, match_deref, match_expr_eq, aggregate, sort)
 
 from handlers.base import BaseHandler
 
@@ -20,10 +21,24 @@ class CollectionItemsHandler(BaseHandler):
         """Handle GET request."""
         session: Session = await self.get_session()
         # Get Curations for the current user.
-        db: AIOEngine = await get_engine()
-        curations: Sequence[Curation] = \
-            await db.find(Curation, Curation.user == self.current_user.id)
-        await self.json({'success': True, 'items': [c.dict() for c in curations]})
+        engine: AIOEngine = await get_engine()
+        # Load `Curation`s, ordering by `created_at` descending.
+        aggregation: Sequence[Dict] = [
+            # match_deref(Curation.user, self.current_user),
+            match({f'{+Curation.user}': self.current_user.id}),  # type: ignore
+
+            sort({f'{+Curation.created_at}': -1}),  # type: ignore
+        ]
+        curations: Sequence[Dict] = \
+            await aggregate_as_dicts(engine=engine,
+                                     aggregation=aggregation,
+                                     model=Curation)
+        # Remove `user` field from each `Curation`.
+        curations = [curation.copy() for curation in curations]
+        for curation in curations:
+            curation.pop('user')
+        # await self.json({'success': True, 'items': [c.dict() for c in curations]})
+        await self.json({'success': True, 'items': curations})
 
     async def post(self):
         """Handle POST request."""

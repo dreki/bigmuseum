@@ -1,14 +1,16 @@
 """Holds utilities for working with MongoDB aggregation pipelines."""
 from __future__ import annotations
+
 from contextlib import asynccontextmanager
 from functools import singledispatch
 from typing import Any, Dict, List, Optional, Sequence, Type, TypeVar, Union
 
 import humps
-from motor.motor_asyncio import AsyncIOMotorCollection
-from motor.motor_tornado import MotorCommandCursor
 from db import AIOEngine
 from models.model import Model
+from motor.motor_asyncio import AsyncIOMotorCollection
+from motor.motor_tornado import MotorCommandCursor
+from odmantic.field import FieldProxy
 
 
 def paginate(aggregation: Sequence[Dict], skip: int, limit: int) -> Sequence[Dict]:
@@ -43,6 +45,27 @@ def lookup(from_: str,
                         'localField': local_field,
                         'foreignField': foreign_field,
                         'as': as_}}
+
+# def deref(model: Model, id_: str) -> Dict:
+#     """Return a DBRef for the given model and ID."""
+#     return {'$ref': f'{+type(model)}', '$id': id_}
+
+
+def deref(field: Union[FieldProxy, Model], record: Model) -> Dict:
+    """Return a DBRef for the given field and record."""
+    # We accept `Model` due to static type checking, but we need a `FieldProxy`.
+    if isinstance(field, Model):
+        raise TypeError(f'Expected a FieldProxy, got {type(field)}')
+    return {f'{+field}': {'$ref': f'{+type(record)}', '$id': record.id}}
+
+
+def match_deref(field: Union[FieldProxy, Model], record: Model) -> Dict:
+    """Return a `match` MongoDB aggregation stage for a given field and record."""
+    # We accept `Model` due to static type checking, but we need a `FieldProxy`.
+    if isinstance(field, Model):
+        raise TypeError(f'Expected a FieldProxy, got {type(field)}')
+    return {'$match': {'$and': [{f'{+field}.$ref': f'{+type(record)}'},
+                                {f'{+field}.$id': record.id}]}}
 
 
 class MongoExpression:
