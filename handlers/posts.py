@@ -1,8 +1,6 @@
 """Holds handlers related to Reddit posts."""
-from os import pipe
-from typing import Dict, List, Optional, Sequence
+from typing import Dict, Optional, Sequence
 
-import dateparser
 from asyncpraw.reddit import Reddit, Submission
 from db import AIOEngine, get_engine
 from models.curation import Curation
@@ -60,17 +58,11 @@ class PostsHandler(BaseHandler):
         """Fetch `Post`s from the database."""
         db: AIOEngine = await get_engine()
 
-        # today_at_midnight: str = dateparser.parse('today').strftime('%Y-%m-%dT%H:%M:%S')
         # Get `Post`s, excluding the `User`'s hidden posts.
         aggregation: Sequence[Dict] = [
             # Only posts from today.
+            # TODO: Use user's time zone
             {'$match': {'$expr': {'$gte': ['$post_created_at', date('yesterday 00:00')]}}},
-            
-            # {
-            #     '$match': {
-            #         'post_created_at': {'$gte': date('4 days ago 00:00')}
-            #     }
-            # },
 
             lookup(from_=+User,
                    let={'user_id': self.current_user.id,
@@ -108,10 +100,10 @@ class PostsHandler(BaseHandler):
 
             # Limit to 50
             # TODO: Limit based on date, etc.
-            limit(50),
+            # limit(50),
         ]
-        from rich.pretty import pprint
-        pprint(aggregation, indent_guides=False)
+        # from rich.pretty import pprint
+        # pprint(aggregation, indent_guides=False)
         result: Sequence[Dict] = await aggregate_as_dicts(engine=db,
                                                           aggregation=aggregation,
                                                           model=Post)
@@ -147,10 +139,6 @@ class PostsHandler(BaseHandler):
         post: Optional[Post] = await engine.find_one(Post, Post.id == ObjectId(post_id))
         if not post:
             raise HTTPError(status_code=400, reason='Post not found.')
-        logger.debug(f'> current user:')
-        logger.debug(self.current_user)
-        # self.current_user.hidden_posts.add(post.id)
-        # self.current_user.add_hidden_post(post.id)
         if not self.current_user.hidden_posts:
             self.current_user.hidden_posts = []
         self.current_user.hidden_posts.append(post.id)
@@ -158,9 +146,6 @@ class PostsHandler(BaseHandler):
 
         # Delete any existing posts cache for this User.
         await delete_cache(self._make_cached_posts_key())
-
-        # await self.current_user.hidden_posts.append(ObjectId(post_id))
-
         self.finish('')
 
     async def patch(self, post_id):
