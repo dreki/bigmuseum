@@ -2,6 +2,7 @@
 from os import pipe
 from typing import Dict, List, Optional, Sequence
 
+import dateparser
 from asyncpraw.reddit import Reddit, Submission
 from db import AIOEngine, get_engine
 from models.curation import Curation
@@ -12,10 +13,10 @@ from odmantic.query import desc
 from settings import settings
 from tornado.web import HTTPError
 from utils.log import logger
-from utils.mongodb import (aggregate, aggregate_as_dicts, and_, cond, eq, expr,
-                           gt, in_, limit, lookup, match, match_expr, not_,
-                           not_in, project, replace_with, set_, size, sort,
-                           unset, unwind, match_expr_eq, add_fields)
+from utils.mongodb import (add_fields, aggregate, aggregate_as_dicts, and_,
+                           cond, date, eq, expr, gt, in_, limit, lookup, match,
+                           match_expr, match_expr_eq, not_, not_in, project,
+                           replace_with, set_, size, sort, unset, unwind)
 from utils.redis import delete_cache, get_cache, set_cache
 
 from handlers.base import BaseHandler
@@ -59,8 +60,18 @@ class PostsHandler(BaseHandler):
         """Fetch `Post`s from the database."""
         db: AIOEngine = await get_engine()
 
+        # today_at_midnight: str = dateparser.parse('today').strftime('%Y-%m-%dT%H:%M:%S')
         # Get `Post`s, excluding the `User`'s hidden posts.
         aggregation: Sequence[Dict] = [
+            # Only posts from today.
+            {'$match': {'$expr': {'$gte': ['$post_created_at', date('yesterday 00:00')]}}},
+            
+            # {
+            #     '$match': {
+            #         'post_created_at': {'$gte': date('4 days ago 00:00')}
+            #     }
+            # },
+
             lookup(from_=+User,
                    let={'user_id': self.current_user.id,
                         'post_id': '$_id'},
@@ -99,8 +110,8 @@ class PostsHandler(BaseHandler):
             # TODO: Limit based on date, etc.
             limit(50),
         ]
-        # from rich.pretty import pprint
-        # pprint(aggregation, indent_guides=False)
+        from rich.pretty import pprint
+        pprint(aggregation, indent_guides=False)
         result: Sequence[Dict] = await aggregate_as_dicts(engine=db,
                                                           aggregation=aggregation,
                                                           model=Post)

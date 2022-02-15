@@ -1,10 +1,12 @@
 """Holds utilities for working with MongoDB aggregation pipelines."""
 from __future__ import annotations
 
+import datetime
 from contextlib import asynccontextmanager
 from functools import singledispatch
 from typing import Any, Dict, List, Optional, Sequence, Type, TypeVar, Union
 
+import dateparser
 import humps
 from db import AIOEngine
 from models.model import Model
@@ -66,6 +68,15 @@ def match_deref(field: Union[FieldProxy, Model], record: Model) -> Dict:
         raise TypeError(f'Expected a FieldProxy, got {type(field)}')
     return {'$match': {'$and': [{f'{+field}.$ref': f'{+type(record)}'},
                                 {f'{+field}.$id': record.id}]}}
+
+
+def date(nl_date: str) -> Dict:
+    """Convert a natural language date and time to a MongoDB date."""
+    parsed: Optional[datetime.datetime] = dateparser.parse(nl_date)
+    if not parsed:
+        raise ValueError(f'Invalid date and time: {nl_date}')
+    # return {'$date': parsed.isoformat()}
+    return {'$dateFromString': {'dateString': parsed.isoformat()}}
 
 
 class MongoExpression:

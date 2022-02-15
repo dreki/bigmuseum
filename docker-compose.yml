@@ -19,6 +19,7 @@ services:
       - DEBUG=true
       - REDIS_HOST
       - NEW_POSTS_CACHE_EXPIRATION_SECONDS
+      - TZ=UTC
     build:
       context: .
       # args:
