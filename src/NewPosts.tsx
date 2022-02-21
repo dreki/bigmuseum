@@ -74,6 +74,12 @@ class NewPosts extends React.Component<INewPostsProps, INewPostsState> {
                     to='/collection'>Collection</Link>
                 <h2 className={'text-2xl mt-5 mb-4'}>New Arrivals, {name}</h2>
                 <h3 className={'text-xl mt-3 mb-5'}>Today <em><span className='text-gray-300'>(UTC)</span></em></h3>
+                <nav aria-label="Posts by Date">
+                    <ul>
+                        <li><a href="#">yesterday</a></li>
+                        <li>today</li>
+                    </ul>
+                </nav>
                 {posts}
             </>
         );
