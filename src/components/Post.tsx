@@ -173,6 +173,28 @@ class Post extends React.Component<IPostProps, IPostState> {
                 </div>
             </CSSTransition>
         );
+
+        // return (
+        //     <div className={'bi-avoid shadow-sm rounded mb-4'}>
+        //         <img src={this.props.imageUrl} alt={this.props.title} />
+        //         {hasCurations}
+        //         <div className={'flex items-center justify-center'}>
+        //             <CollectButton onClick={this.onCollectPost} />
+        //             <TrashButton onClick={this.onTrashPost.bind(this)} />
+        //         </div>
+        //     </div>
+        // )
+
+        // return (
+        //     <div className={'bi-avoid shadow-sm rounded mb-4'}>
+        //         <LazyLoadImage src={this.props.imageUrl} alt={this.props.title} />
+        //         {hasCurations}
+        //         <div className={'flex items-center justify-center'}>
+        //             <CollectButton onClick={this.onCollectPost} />
+        //             <TrashButton onClick={this.onTrashPost.bind(this)} />
+        //         </div>
+        //     </div>
+        // )
     }
 
     private renderImageContentLoader(): React.ReactNode {
