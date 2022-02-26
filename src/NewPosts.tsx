@@ -1,10 +1,10 @@
 import axios from 'axios';
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import Posts from './components/Posts';
 
 interface INewPostsProps {
-    name: string
+    name: string,
 }
 
 interface INewPostsState {
@@ -65,6 +65,12 @@ class NewPosts extends React.Component<INewPostsProps, INewPostsState> {
 
     render() {
         const { name } = this.props;
+
+        // Get query params.
+        const queryParams = new URLSearchParams(window.location.search);
+        console.log(`> queryParams: ${queryParams}; date: ${queryParams.get('date')}`);
+
+        
         const posts = (<Posts posts={this.state.posts}
             onCollectPost={this.onCollectPost}
             onTrashPost={this.onTrashPost} />);
@@ -75,7 +81,8 @@ class NewPosts extends React.Component<INewPostsProps, INewPostsState> {
                 <h3 className={'text-xl mt-3 mb-5'}>Today <em><span className='text-gray-300'>(UTC)</span></em></h3>
                 <nav aria-label="Posts by Date">
                     <ul>
-                        <li><a href="#">yesterday</a></li>
+                        {/* <li><a href="#">yesterday</a></li> */}
+                        <li><Link to='/app/posts?date=yesterday'>yesterday</Link></li>
                         <li>today</li>
                     </ul>
                 </nav>
