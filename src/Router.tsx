@@ -9,7 +9,7 @@ function Router() {
         <BrowserRouter>
             <Routes>
                 <Route path="/app/" element={<NewPosts name={'Little Janey'} />} />
-                <Route path="/app/posts" element={<NewPosts name={'Little Janey'} />} />
+                <Route path="/app/posts" element={<NewPosts name={'Little Janey!'} />} />
                 <Route path="/app/collection" element={<Collection />} />
             </Routes>
         </BrowserRouter>

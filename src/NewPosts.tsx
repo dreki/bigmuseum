@@ -27,6 +27,7 @@ class NewPosts extends React.Component<INewPostsProps, INewPostsState> {
         console.log('> App.componentDidMount');
 
         // Load and set posts.
+        // TODO: Create shared function to load posts that can be used here and when people click on a date.
         const response = await axios.get('/api/posts?filter=new');
         // console.log(response);
 
@@ -63,6 +64,17 @@ class NewPosts extends React.Component<INewPostsProps, INewPostsState> {
         this.setState({ posts });
     }
 
+    // onClickDate = async (date: string) => {
+    //     console.log(`> onClickDate ${date}`);
+    // }
+    onClickDate = async (date: string) => {
+        console.log(`> onClickDate ${date}`);
+        // It's okay to load here, since React Router doesn't actually re-load
+        // or re-create the component. So, the URL just changes and people can
+        // reload it, but we should load new data here.
+        console.log('LOAD data here');
+    }
+
     render() {
         const { name } = this.props;
 
@@ -70,7 +82,7 @@ class NewPosts extends React.Component<INewPostsProps, INewPostsState> {
         const queryParams = new URLSearchParams(window.location.search);
         console.log(`> queryParams: ${queryParams}; date: ${queryParams.get('date')}`);
 
-        
+
         const posts = (<Posts posts={this.state.posts}
             onCollectPost={this.onCollectPost}
             onTrashPost={this.onTrashPost} />);
@@ -82,7 +94,10 @@ class NewPosts extends React.Component<INewPostsProps, INewPostsState> {
                 <nav aria-label="Posts by Date">
                     <ul>
                         {/* <li><a href="#">yesterday</a></li> */}
-                        <li><Link to='/app/posts?date=yesterday'>yesterday</Link></li>
+                        <li>
+                            <Link to='/app/posts?date=yesterday'
+                                onClick={() => this.onClickDate("yesterday")}>yesterday</Link>
+                        </li>
                         <li>today</li>
                     </ul>
                 </nav>
