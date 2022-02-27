@@ -48,13 +48,25 @@ def make_app() -> tornado.web.Application:
             (r'/api/posts', PostsHandler),
             (r'/api/posts/(?P<post_id>[^/]+)', PostsHandler),
             (r'/api/collection/items', CollectionItemsHandler),
-            # Alias for main app file.
-            # (
+
+            # Serve specific static files (with extensions).
             url(
-                r'/app/(.*)',
+                r'/app/(.*\..*)',
                 tornado.web.StaticFileHandler,
                 {
                     'path': static_path,
+                    'default_filename': 'index.html',
+                },
+                name='app_files'
+            ),
+
+
+            # Allow JS to route.
+            url(
+                r'/app/[^\.]*()',
+                tornado.web.StaticFileHandler,
+                {
+                    'path': os.path.join(os.path.dirname(__file__), 'dist', 'index.html'),
                     'default_filename': 'index.html',
                 },
                 name='app'
