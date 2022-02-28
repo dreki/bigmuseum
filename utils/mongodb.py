@@ -70,14 +70,6 @@ def match_deref(field: Union[FieldProxy, Model], record: Model) -> Dict:
                                 {f'{+field}.$id': record.id}]}}
 
 
-# def date_(nl_date: str) -> Dict:
-#     """Convert a natural language date and time to a MongoDB date."""
-#     parsed: Optional[datetime.datetime] = dateparser.parse(nl_date)
-#     if not parsed:
-#         raise ValueError(f'Invalid date and time: {nl_date}')
-#     # return {'$date': parsed.isoformat()}
-#     return {'$dateFromString': {'dateString': parsed.isoformat()}}
-
 def date_(date: datetime.datetime) -> Dict:
     """Make a MongoDB date from a Python `datetime.datetime`."""
     return {'$dateFromString': {'dateString': date.isoformat()}}
