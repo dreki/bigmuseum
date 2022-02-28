@@ -1,4 +1,6 @@
 """Holds handlers related to Reddit posts."""
+import datetime
+from tracemalloc import start
 from typing import Dict, Optional, Sequence
 
 from asyncpraw.reddit import Reddit, Submission
@@ -10,9 +12,10 @@ from odmantic.bson import ObjectId
 from odmantic.query import desc
 from settings import settings
 from tornado.web import HTTPError
+from utils.date import parse_nl_date
 from utils.log import logger
 from utils.mongodb import (add_fields, aggregate, aggregate_as_dicts, and_,
-                           cond, date, eq, expr, gt, in_, limit, lookup, match,
+                           cond, date_, eq, expr, gt, in_, limit, lookup, match,
                            match_expr, match_expr_eq, not_, not_in, project,
                            replace_with, set_, size, sort, unset, unwind)
 from utils.redis import delete_cache, get_cache, set_cache
@@ -54,15 +57,27 @@ class PostsHandler(BaseHandler):
         # Hide submission
         await submission.hide()
 
-    async def _fetch_posts(self) -> Sequence[Dict]:
-        """Fetch `Post`s from the database."""
+    async def _fetch_posts(self, date: str='today 00:00') -> Sequence[Dict]:
+        """
+        Fetch `Post`s from the database.
+        
+        :param date: The date to start fetching posts from. Natural language.
+        """
         db: AIOEngine = await get_engine()
+
+        start_date: Optional[datetime.datetime] = parse_nl_date(date)
+        # end_date: Optional[datetime.datetime] = parse_nl_date(f'{date} +24 hours')
+        if not start_date:
+            raise ValueError(f'Invalid date: {date}')
+        end_date: datetime.datetime = start_date + datetime.timedelta(days=1)
 
         # Get `Post`s, excluding the `User`'s hidden posts.
         aggregation: Sequence[Dict] = [
             # Only posts from today.
             # TODO: Use user's time zone
-            {'$match': {'$expr': {'$gte': ['$post_created_at', date('yesterday 00:00')]}}},
+            # {'$match': {'$expr': {'$gte': ['$post_created_at', date_('yesterday 00:00')]}}},
+            {'$match': {'$expr': {'$gte': ['$post_created_at', date_(start_date)]}}},
+            {'$match': {'$expr': {'$lte': ['$post_created_at', date_(end_date)]}}},
 
             lookup(from_=+User,
                    let={'user_id': self.current_user.id,
@@ -102,6 +117,8 @@ class PostsHandler(BaseHandler):
             # TODO: Limit based on date, etc.
             # limit(50),
         ]
+        logger.debug('> aggregation: ')
+        logger.debug(aggregation)
         # from rich.pretty import pprint
         # pprint(aggregation, indent_guides=False)
         result: Sequence[Dict] = await aggregate_as_dicts(engine=db,
@@ -116,11 +133,15 @@ class PostsHandler(BaseHandler):
         # if not filter or filter not in ['new', 'hot', 'top']:
         if not filter or filter not in ['new']:
             raise HTTPError(status_code=400, reason='Invalid filter.')
+        # Get date we should start fetching posts for.
+        posts_date: Optional[str] = self.get_query_argument('date', default=None)
 
-        cached_posts = await self._get_cached_posts()
-        if cached_posts:
-            await self.json({'items': cached_posts})
-            return
+        # TODO: Update loading from cache to use date.
+        # TODO: Uncomment to enable cache.
+        # cached_posts = await self._get_cached_posts()
+        # if cached_posts:
+        #     await self.json({'items': cached_posts})
+        #     return
         logger.debug('> cache missing; fetching posts')
         posts: Sequence[Dict] = await self._fetch_posts()
         await self._set_cached_posts(posts)
