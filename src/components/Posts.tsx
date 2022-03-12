@@ -15,7 +15,6 @@ interface IPostsProps {
         postCreatedAt: Date
     }>;
     onCollectPost?: ((postId: string) => void);
-    onTrashPost?: ((postId: string) => void);
 }
 
 /**
@@ -41,17 +40,6 @@ class Posts extends React.Component<IPostsProps, IPostsState> {
     }
 
     /**
-     * Notify the parent component that a post deletion has been triggered.
-     * @param postId {string}
-     * @returns {void}
-     */
-    onTrashPost = (postId: string): void => {
-        if (this.props.onTrashPost) {
-            this.props.onTrashPost(postId);
-        }
-    }
-
-    /**
      * Render the list of `Post`s.
      * @returns {ReactNode}
      */
@@ -59,7 +47,6 @@ class Posts extends React.Component<IPostsProps, IPostsState> {
         let posts: Array<React.ReactElement> =
             (this.props.posts ?? []).map((post, i) => (
                 <Post key={i} {...post}
-                    onTrashPost={this.onTrashPost}
                     onCollectPost={this.onCollectPost} />));
         return (
             <div>

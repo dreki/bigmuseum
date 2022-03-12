@@ -53,17 +53,6 @@ class NewPosts extends React.Component<INewPostsProps, INewPostsState> {
         );
     }
 
-    onTrashPost = async (postId: string) => {
-        // const response = await fetch('/api/collection', { method: 'POST' })
-
-        // const response = await axios.post('/api/collection/items', { postId });
-        // const response = await axios.delete(`/api/posts/abc123`);
-        const response = await axios.delete(`/api/posts/${postId}`);
-        // Remove post from state.
-        const posts = this.state.posts.filter(post => post.id !== postId);
-        this.setState({ posts });
-    }
-
     // onClickDate = async (date: string) => {
     //     console.log(`> onClickDate ${date}`);
     // }
@@ -84,8 +73,7 @@ class NewPosts extends React.Component<INewPostsProps, INewPostsState> {
 
 
         const posts = (<Posts posts={this.state.posts}
-            onCollectPost={this.onCollectPost}
-            onTrashPost={this.onTrashPost} />);
+            onCollectPost={this.onCollectPost} />);
         return (
             <>
                 <Link to='/collection'>Collection</Link>

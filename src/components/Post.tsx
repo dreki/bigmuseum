@@ -17,7 +17,6 @@ interface IPostProps {
     postCreatedAt: Date
 
     onCollectPost?: ((postId: string) => void),
-    onTrashPost?: ((postId: string) => void),
 }
 
 /**
@@ -40,13 +39,6 @@ interface IImageProps {
 }
 
 /**
- * typedef for TrashButton props
- */
-interface ITrashButtonProps {
-    onClick: any;
-}
-
-/**
  * Image component
  * @param props {IImageProps}
  * @constructor
@@ -61,21 +53,6 @@ function Image(props: IImageProps) {
 }
 
 /**
- * TrashButton component
- * @param props {ITrashButtonProps}
- * @constructor
- */
-function TrashButton(props: ITrashButtonProps) {
-    return (
-        <button
-            className={"w-1/3 text-moody-blue-500 bg-transparent border-t border-b border-r border-moody-blue-500 hover:bg-moody-blue-500 hover:text-white active:bg-moody-blue-600 font-bold uppercase text-sm px-6 py-3 rounded-br outline-none focus:outline-none ease-linear transition-all duration-150"}
-            onClick={props.onClick}>
-            🗑
-        </button>
-    );
-}
-
-/**
  * typedef for CollectButton props
  */
 interface ICollectButtonProps {
@@ -84,7 +61,7 @@ interface ICollectButtonProps {
 
 function CollectButton(props: ICollectButtonProps) {
     return <button
-        className={"w-2/3 text-moody-blue-500 bg-transparent border-l border-t border-r border-b border-moody-blue-500 hover:bg-moody-blue-500 hover:text-white active:bg-moody-blue-600 font-bold uppercase text-sm px-6 py-3 rounded-bl outline-none focus:outline-none ease-linear transition-all duration-150"}
+        className={"w-full text-moody-blue-500 bg-transparent border-l border-t border-r border-b border-moody-blue-500 hover:bg-moody-blue-500 hover:text-white active:bg-moody-blue-600 font-bold uppercase text-sm px-6 py-3 rounded-bl rounded-br outline-none focus:outline-none ease-linear transition-all duration-150"}
         onClick={props.onClick}
     >
         Add
@@ -138,19 +115,6 @@ class Post extends React.Component<IPostProps, IPostState> {
     }
 
     /**
-     * Listen to clicks on the trash button.
-     * @param e {React.SyntheticEvent}
-     * @returns {void}
-     */
-    onTrashPost(e: React.SyntheticEvent): void {
-        e.preventDefault();
-        if (!this.props.onTrashPost) {
-            return;
-        }
-        this.props.onTrashPost(this.props.id);
-    }
-
-    /**
      * Render the post.
      * @returns {React.ReactNode}
      */
@@ -168,33 +132,10 @@ class Post extends React.Component<IPostProps, IPostState> {
                     {hasCurations}
                     <div className={'flex items-center justify-center'}>
                         <CollectButton onClick={this.onCollectPost} />
-                        <TrashButton onClick={this.onTrashPost.bind(this)} />
                     </div>
                 </div>
             </CSSTransition>
         );
-
-        // return (
-        //     <div className={'bi-avoid shadow-sm rounded mb-4'}>
-        //         <img src={this.props.imageUrl} alt={this.props.title} />
-        //         {hasCurations}
-        //         <div className={'flex items-center justify-center'}>
-        //             <CollectButton onClick={this.onCollectPost} />
-        //             <TrashButton onClick={this.onTrashPost.bind(this)} />
-        //         </div>
-        //     </div>
-        // )
-
-        // return (
-        //     <div className={'bi-avoid shadow-sm rounded mb-4'}>
-        //         <LazyLoadImage src={this.props.imageUrl} alt={this.props.title} />
-        //         {hasCurations}
-        //         <div className={'flex items-center justify-center'}>
-        //             <CollectButton onClick={this.onCollectPost} />
-        //             <TrashButton onClick={this.onTrashPost.bind(this)} />
-        //         </div>
-        //     </div>
-        // )
     }
 
     private renderImageContentLoader(): React.ReactNode {
