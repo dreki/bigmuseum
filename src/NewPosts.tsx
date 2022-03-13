@@ -82,11 +82,11 @@ class NewPosts extends React.Component<INewPostsProps, INewPostsState> {
                 <nav aria-label="Posts by Date">
                     <ul>
                         {/* <li><a href="#">yesterday</a></li> */}
-                        <li>
+                        <li className='inline mr-2'>
                             <Link to='/app/posts?date=yesterday'
                                 onClick={() => this.onClickDate("yesterday")}>yesterday</Link>
                         </li>
-                        <li>today</li>
+                        <li className='inline'>today</li>
                     </ul>
                 </nav>
                 {posts}
