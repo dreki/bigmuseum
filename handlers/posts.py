@@ -137,7 +137,7 @@ class PostsHandler(BaseHandler):
         posts_date: Optional[str] = self.get_query_argument('date', default=None)
 
         # TODO: Update loading from cache to use date.
-        # TODO: Uncomment to enable cache.
+        # TODO: Uncomment to enable cache, if you want.
         # cached_posts = await self._get_cached_posts()
         # if cached_posts:
         #     await self.json({'items': cached_posts})
